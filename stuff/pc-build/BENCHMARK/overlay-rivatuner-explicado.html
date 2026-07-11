@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overlay RivaTuner — Explicado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0f;
+    --cyan:#39c2f5;      /* valor actual */
+    --yellow:#f5e13a;    /* máximo de sesión */
+    --pink:#f0a0c8;      /* lectura mínima */
+    --orange:#f5821f;    /* títulos de panel */
+    --green:#28c840;     /* nombres de discos */
+    --lime:#a8e02a;      /* API gráfica */
+    --white:#f2f2f2;
+    --label:#e8e8e8;
+    --tip-bg:#16161f;
+    --tip-border:#39c2f5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:'Chakra Petch',system-ui,sans-serif;
+    min-height:100vh;
+    padding:24px 16px 60px;
+    background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:28px 28px;
+  }
+  header{max-width:960px;margin:0 auto 20px}
+  header h1{font-size:clamp(20px,3.5vw,30px);letter-spacing:.04em;text-transform:uppercase}
+  header h1 span{color:var(--orange)}
+  header p{font-family:'IBM Plex Sans',sans-serif;color:#b8b8c4;font-size:14px;margin-top:6px;max-width:640px}
+
+  /* Leyenda de colores */
+  .legend{
+    max-width:960px;margin:0 auto 18px;display:flex;flex-wrap:wrap;gap:10px 22px;
+    font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#c8c8d2;
+    border:1px solid #26262f;padding:10px 14px;border-radius:6px;background:#101018;
+  }
+  .legend b{font-family:'Chakra Petch',sans-serif}
+  .legend .sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+  /* Grilla del overlay */
+  .overlay{
+    max-width:960px;margin:0 auto;display:grid;gap:4px;
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:"gpu cpu" "ram store" "fps store";
+  }
+  @media (max-width:720px){
+    .overlay{grid-template-columns:1fr;grid-template-areas:"gpu" "cpu" "ram" "store" "fps"}
+  }
+  .panel{padding:16px 18px;border-radius:4px}
+  .panel h2{color:var(--orange);font-size:clamp(18px,2.6vw,26px);letter-spacing:.05em;margin-bottom:10px}
+  .gpu{grid-area:gpu;background:#3a2e05}
+  .cpu{grid-area:cpu;background:#0b2838}
+  .ram{grid-area:ram;background:#1e0f33}
+  .store{grid-area:store;background:#241105}
+  .fps{grid-area:fps;background:#0d0d0d}
+  .row{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin:9px 0;font-size:clamp(15px,2.2vw,20px)}
+  .lbl{color:var(--label);font-weight:600}
+  .sub{background:rgba(0,0,0,.25);margin:12px -18px;padding:10px 18px}
+  .sub:last-child{margin-bottom:-16px;padding-bottom:16px}
+  .disk{color:var(--green);font-size:clamp(15px,2.2vw,20px);font-weight:700;letter-spacing:.04em}
+
+  /* Sensores con tooltip */
+  .s{
+    position:relative;cursor:help;font-weight:700;
+    border-bottom:1px dotted rgba(255,255,255,.45);
+    outline:none;
+  }
+  .s sup{font-size:.55em;font-weight:600;margin-left:1px}
+  .c{color:var(--cyan)} .y{color:var(--yellow)} .p{color:var(--pink)}
+  .w{color:var(--white)} .g{color:var(--lime)} .o{color:var(--orange)}
+  .s:hover,.s:focus-visible{filter:brightness(1.25);border-bottom-color:#fff}
+
+  .s::after{
+    content:attr(data-tip);
+    position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(4px);
+    width:max-content;max-width:min(270px,72vw);
+    background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:6px;
+    padding:9px 12px;
+    font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:400;line-height:1.45;
+    color:#e8e8ee;text-transform:none;letter-spacing:0;
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .15s ease,transform .15s ease;
+    z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.6);
+  }
+  .s::before{
+    content:"";position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);
+    border:6px solid transparent;border-top-color:var(--tip-border);
+    opacity:0;visibility:hidden;transition:opacity .15s ease;z-index:20;
+  }
+  .s:hover::after,.s:focus-visible::after{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+  .s:hover::before,.s:focus-visible::before{opacity:1;visibility:visible}
+  /* variantes para bordes de pantalla */
+  .tl::after{left:0;transform:translateX(0) translateY(4px)}
+  .tl:hover::after,.tl:focus-visible::after{transform:translateX(0) translateY(0)}
+  .tl::before{left:14px}
+  .tr::after{left:auto;right:0;transform:translateX(0) translateY(4px)}
+  .tr:hover::after,.tr:focus-visible::after{transform:translateX(0) translateY(0)}
+  .tr::before{left:auto;right:14px;transform:none}
+
+  .fps .big{font-size:clamp(30px,5vw,44px);letter-spacing:.03em}
+  .clock{color:var(--cyan);font-size:clamp(18px,3vw,26px);font-weight:700;margin-top:6px}
+
+  @media (prefers-reduced-motion:reduce){
+    .s::after,.s::before{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Overlay <span>RivaTuner</span> explicado</h1>
+  <p>Pasá el mouse (o navegá con Tab) sobre cualquier valor para ver qué mide ese sensor. Los colores del overlay siguen un código fijo:</p>
+</header>
+
+<div class="legend">
+  <span><span class="sw" style="background:var(--cyan)"></span><b style="color:var(--cyan)">Cian</b> = valor actual</span>
+  <span><span class="sw" style="background:var(--yellow)"></span><b style="color:var(--yellow)">Amarillo</b> = máximo de la sesión</span>
+  <span><span class="sw" style="background:var(--pink)"></span><b style="color:var(--pink)">Rosa</b> = mínimo de la sesión</span>
+  <span><span class="sw" style="background:var(--orange)"></span><b style="color:var(--orange)">Naranja</b> = nombre del componente</span>
+</div>
+
+<div class="overlay">
+
+  <!-- ===================== GPU ===================== -->
+  <section class="panel gpu">
+    <h2><span class="s tl w" data-tip="Tu placa de video (GPU): NVIDIA GeForce RTX 4080 SUPER con 16 GB de VRAM. Todos los datos de este panel son de la GPU." style="color:var(--orange)">RTX 4080 SUPER</span></h2>
+    <div class="row">
+      <span class="s tl c" data-tip="Temperatura actual del núcleo de la GPU. 29 °C indica que está en reposo (idle). En juego lo normal es 60–75 °C.">29<sup>°C</sup></span>
+      <span class="lbl">Max:</span>
+      <span class="s y" data-tip="Temperatura máxima que alcanzó la GPU desde que arrancó el monitoreo (máximo de sesión).">29<sup>°C</sup></span>
+      <span class="s c" data-tip="Hot Spot: la temperatura del punto más caliente del chip. Siempre es mayor que la temperatura promedio del núcleo. Es normal una diferencia de 8–15 °C.">36<sup>°C</sup></span>
+      <span class="s c" data-tip="Temperatura de la memoria VRAM (memory junction). La GDDR6X puede operar con seguridad hasta ~95 °C.">38<sup>°C</sup></span>
+      <span class="s tr c" data-tip="Límite térmico (Temp Limit): temperatura objetivo a la que la GPU empieza a bajar frecuencias para protegerse (throttling). 84 °C es el valor por defecto de NVIDIA.">84<sup>°C</sup></span>
+    </div>
+    <div class="row">
+      <span class="lbl">Core:</span>
+      <span class="s c" data-tip="Frecuencia actual del núcleo gráfico. 285 MHz es frecuencia de reposo: la GPU baja el reloj cuando no tiene carga. En juego sube a ~2500–2800 MHz.">285<sup>MHz</sup></span>
+      <span class="lbl">Core Usage:</span>
+      <span class="s tr c" data-tip="Porcentaje de uso del núcleo de la GPU. 30% con 285 MHz sugiere carga liviana (escritorio, video o un juego poco exigente).">30<sup>%</sup></span>
+    </div>
+    <div class="row">
+      <span class="lbl">Power:</span>
+      <span class="s c" data-tip="Consumo eléctrico actual de la placa de video en watts. 26 W es consumo de reposo; en juego una 4080 SUPER puede superar los 300 W.">26<sup>W</sup></span>
+      <span class="s y" data-tip="Consumo máximo registrado en la sesión.">29<sup>W</sup></span>
+      <span class="lbl">Power Usage:</span>
+      <span class="s tr c" data-tip="Porcentaje del límite de potencia (TDP) que está usando la GPU. El límite de la 4080 SUPER es 320 W, así que 17% ≈ 55 W disponibles de margen enorme.">17<sup>%</sup></span>
+    </div>
+    <div class="row">
+      <span class="lbl">Core Voltage:</span>
+      <span class="s c" data-tip="Voltaje actual aplicado al núcleo de la GPU. Sube y baja junto con la frecuencia (a más MHz, más voltaje). En reposo ronda 0.9 V; a plena carga ~1.05–1.1 V.">0.915<sup>V</sup></span>
+      <span class="s tr y" data-tip="Voltaje máximo del núcleo registrado en la sesión.">0.915<sup>V</sup></span>
+    </div>
+    <div class="row">
+      <span class="lbl">VRAM Usage:</span>
+      <span class="s c" data-tip="Memoria de video ocupada en este momento: texturas, framebuffers, etc. 1.37 GB es típico de escritorio.">1.37<sup>GB</sup></span>
+      <span class="lbl">/</span>
+      <span class="s tr c" data-tip="Total de VRAM de la placa: 16 GB (se muestra 15.99 por redondeo binario).">15.99<sup>GB</sup></span>
+    </div>
+  </section>
+
+  <!-- ===================== CPU ===================== -->
+  <section class="panel cpu">
+    <h2><span class="s tl w" data-tip="Tu procesador (CPU): AMD Ryzen 7 9700X, 8 núcleos / 16 hilos, arquitectura Zen 5." style="color:var(--orange)">R7 9700X</span></h2>
+    <div class="row">
+      <span class="s tl c" data-tip="Temperatura actual del procesador (Tctl/Tdie). Los Ryzen suelen mostrar picos breves aunque estén casi en reposo; 58 °C es normal. El límite del 9700X es 95 °C.">58<sup>°C</sup></span>
+      <span class="lbl">Max:</span>
+      <span class="s tr y" data-tip="Temperatura máxima del CPU registrada en la sesión.">58<sup>°C</sup></span>
+    </div>
+    <div class="row">
+      <span class="lbl">Usage:</span>
+      <span class="s c" data-tip="Uso total del procesador, promediando todos los núcleos. 15% = carga liviana.">15<sup>%</sup></span>
+    </div>
+    <div class="row">
+      <span class="lbl">Power:</span>
+      <span class="s c" data-tip="Consumo eléctrico actual del CPU (package power). El 9700X tiene un TDP de 65 W (PPT 88 W), así que 50 W es carga parcial.">50<sup>W</sup></span>
+      <span class="s tr y" data-tip="Consumo máximo del CPU registrado en la sesión.">57<sup>W</sup></span>
+    </div>
+    <div class="row" style="font-size:clamp(13px,1.9vw,17px)">
+      <span class="s tl w" data-tip="Frecuencia del núcleo 1. Es el que está trabajando ahora: 4138 MHz es cerca de su velocidad de boost.">4138<sup>MHz</sup></span>
+      <span class="s w" data-tip="Frecuencia del núcleo 2. Carga intermedia.">1948<sup>MHz</sup></span>
+      <span class="s w" data-tip="Frecuencia del núcleo 3. Son 'relojes efectivos': cuando un núcleo está dormido gran parte del tiempo, el promedio da valores muy bajos como este.">420<sup>MHz</sup></span>
+      <span class="s w" data-tip="Frecuencia del núcleo 4.">1067<sup>MHz</sup></span>
+      <span class="s w" data-tip="Frecuencia del núcleo 5.">1490<sup>MHz</sup></span>
+      <span class="s w" data-tip="Frecuencia del núcleo 6. Mayormente inactivo.">641<sup>MHz</sup></span>
+      <span class="s w" data-tip="Frecuencia del núcleo 7. Casi dormido (ahorro de energía).">251<sup>MHz</sup></span>
+      <span class="s tr w" data-tip="Frecuencia del núcleo 8. Casi dormido. Que haya núcleos a 100–600 MHz es bueno: significa que el ahorro de energía funciona.">124<sup>MHz</sup></span>
+    </div>
+  </section>
+
+  <!-- ===================== RAM ===================== -->
+  <section class="panel ram">
+    <h2><span class="s tl w" data-tip="Memoria RAM del sistema: 64 GB de DDR5 en dos módulos." style="color:var(--orange)">RAM</span></h2>
+    <div class="row">
+      <span class="s tl c" data-tip="Temperatura actual del primer módulo de RAM. Las DDR5 traen sensor propio; 41 °C es totalmente normal (preocupante recién arriba de ~60 °C).">41<sup>°C</sup></span>
+      <span class="lbl">Max:</span>
+      <span class="s y" data-tip="Máxima temperatura del módulo 1 en la sesión.">41<sup>°C</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl c" data-tip="Temperatura actual del segundo módulo de RAM.">41<sup>°C</sup></span>
+      <span class="lbl">Max:</span>
+      <span class="s y" data-tip="Máxima temperatura del módulo 2 en la sesión.">41<sup>°C</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl c" data-tip="Frecuencia efectiva de la memoria: DDR5-5800 (velocidad de transferencia en MT/s). El reloj real es la mitad, 2900 MHz, porque DDR = Double Data Rate.">5800<sup>MHz</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl c" data-tip="RAM ocupada en este momento por Windows y los programas abiertos.">15.23<sup>GB</sup></span>
+      <span class="lbl">/</span>
+      <span class="s c" data-tip="Total de RAM instalada: 64 GB.">64<sup>GB</sup></span>
+    </div>
+    <div class="row">
+      <span class="lbl">Usage:</span>
+      <span class="s c" data-tip="Porcentaje de RAM en uso (15.23 de 64 GB ≈ 25%). Tenés muchísimo margen libre.">25<sup>%</sup></span>
+    </div>
+  </section>
+
+  <!-- ===================== ALMACENAMIENTO / CHIPSET / PSU ===================== -->
+  <section class="panel store">
+    <div class="sub" style="margin-top:-16px;padding-top:16px">
+      <div class="disk"><span class="s tl g" data-tip="Tu SSD principal: Samsung 990 PRO, un NVMe M.2 PCIe 4.0 de alta gama.">SSD M.2: 990 PRO</span></div>
+      <div class="row">
+        <span class="s tl c" data-tip="Temperatura actual del SSD. 37 °C en reposo es excelente; los NVMe empiezan a reducir velocidad (throttling) cerca de 70–80 °C.">37<sup>°C</sup></span>
+        <span class="s y" data-tip="Temperatura máxima del 990 PRO en la sesión.">37<sup>°C</sup></span>
+        <span class="s c" data-tip="Actividad de escritura: porcentaje del tiempo que el disco pasó escribiendo datos. 1% = casi inactivo.">1<sup>% Write</sup></span>
+        <span class="s tr c" data-tip="Actividad de lectura: porcentaje del tiempo que el disco pasó leyendo datos.">0<sup>% Read</sup></span>
+      </div>
+    </div>
+    <div class="sub">
+      <div class="disk"><span class="s tl g" data-tip="Tu segundo SSD: Samsung 970 EVO Plus, NVMe M.2 PCIe 3.0.">SSD M.2: 970 EVO+</span></div>
+      <div class="row">
+        <span class="s tl c" data-tip="Temperatura actual del 970 EVO Plus.">33<sup>°C</sup></span>
+        <span class="s y" data-tip="Temperatura máxima del 970 EVO+ en la sesión.">33<sup>°C</sup></span>
+        <span class="s c" data-tip="Actividad de escritura del segundo disco.">1<sup>% Write</sup></span>
+        <span class="s tr c" data-tip="Actividad de lectura del segundo disco.">0<sup>% Read</sup></span>
+      </div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <span class="s tl o" data-tip="Chipset de la placa madre (en AM5: B650/X670/X870). Es el chip que maneja puertos USB, SATA y líneas PCIe extra.">CHIPSET</span>
+      <span class="s c" data-tip="Temperatura actual del chipset. Suelen correr calientes (50–65 °C) porque casi siempre tienen disipador pasivo, sin ventilador. 56 °C es normal.">56<sup>°C</sup></span>
+      <span class="lbl">Max:</span>
+      <span class="s y" data-tip="Temperatura máxima del chipset en la sesión.">56<sup>°C</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl o" data-tip="Fuente de alimentación (PSU). Que reporte datos significa que es una fuente digital con monitoreo (por ejemplo, con conexión USB interna).">PSU</span>
+      <span class="s c" data-tip="Temperatura interna actual de la fuente. 40 °C es un valor sano.">40<sup>°C</sup></span>
+      <span class="lbl">Max:</span>
+      <span class="s y" data-tip="Temperatura máxima de la fuente en la sesión.">40<sup>°C</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl o" data-tip="Línea de +3.3 V de la fuente: alimenta principalmente componentes de la placa madre y ranuras M.2. Tolerancia ATX: ±5% (3.14–3.47 V).">+3V</span>
+      <span class="s c" data-tip="Voltaje actual de la línea de 3.3 V. 3.31 V está perfecto.">3.31<sup>V</sup></span>
+      <span class="s p" data-tip="Voltaje mínimo registrado en la sesión. Que sea igual al actual indica una línea muy estable.">3.31<sup>V</sup></span>
+      <span class="s tr y" data-tip="Voltaje máximo registrado en la sesión.">3.31<sup>V</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl o" data-tip="Línea de +5 V: alimenta puertos USB, SATA y parte de la placa. Tolerancia ATX: ±5% (4.75–5.25 V).">+5V</span>
+      <span class="s c" data-tip="Voltaje actual de la línea de 5 V. 5.02 V, dentro de especificación.">5.02<sup>V</sup></span>
+      <span class="s p" data-tip="Mínimo de la sesión en la línea de 5 V.">5.02<sup>V</sup></span>
+      <span class="s tr y" data-tip="Máximo de la sesión en la línea de 5 V.">5.06<sup>V</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl o" data-tip="Línea de +12 V: la más importante, alimenta CPU y GPU. Tolerancia ATX: ±5% (11.4–12.6 V).">+12V</span>
+      <span class="s c" data-tip="Voltaje actual de la línea de 12 V. 11.88 V está dentro de la tolerancia; una caída leve bajo carga es normal.">11.88<sup>V</sup></span>
+      <span class="s p" data-tip="Mínimo de la sesión en la línea de 12 V. Si bajara de 11.4 V bajo carga, sería señal de una fuente al límite.">11.88<sup>V</sup></span>
+      <span class="s tr y" data-tip="Máximo de la sesión en la línea de 12 V.">11.88<sup>V</sup></span>
+    </div>
+  </section>
+
+  <!-- ===================== FPS / RELOJ ===================== -->
+  <section class="panel fps">
+    <div class="row">
+      <span class="s tl g" data-tip="API gráfica que usa la aplicación monitoreada: Direct3D 9 (DirectX 9). Es una API antigua, típica de juegos viejos o de ciertos launchers/overlays.">D3D9</span>
+      <span class="s w" data-tip="Frametime: cuánto tarda en generarse cada cuadro. 15.3 ms ≈ 65 FPS. Un frametime estable importa más que el número de FPS: los saltos bruscos se sienten como tirones (stuttering).">15.3<sup>ms</sup></span>
+    </div>
+    <div class="row big">
+      <span class="s tl w" data-tip="Cuadros por segundo que está renderizando la aplicación. 69 FPS suele indicar un límite de FPS activo o V-Sync, más que falta de potencia (mirá el uso de GPU: solo 30%).">69 FPS</span>
+    </div>
+    <div class="clock"><span class="s tl c" data-tip="Hora actual del sistema. Útil para saber cuánto llevás jugando de un vistazo.">04:29:58 PM</span></div>
+  </section>
+
+</div>
+
+</body>
+</html>
