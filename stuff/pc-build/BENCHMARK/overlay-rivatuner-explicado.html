@@ -22,52 +22,83 @@
     --tip-border:#39c2f5;
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  html{height:100%}
   body{
+    min-height:100%;
     background:var(--bg);
     color:var(--white);
     font-family:'Chakra Petch',system-ui,sans-serif;
-    min-height:100vh;
-    padding:24px 16px 60px;
+    display:flex;flex-direction:column;
+    padding:12px 16px;
+    overflow-x:hidden;
     background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
     background-size:28px 28px;
   }
-  header{max-width:960px;margin:0 auto 20px}
-  header h1{font-size:clamp(20px,3.5vw,30px);letter-spacing:.04em;text-transform:uppercase}
-  header h1 span{color:var(--orange)}
-  header p{font-family:'IBM Plex Sans',sans-serif;color:#b8b8c4;font-size:14px;margin-top:6px;max-width:640px}
 
-  /* Leyenda de colores */
+  /* ---------- Barra superior (fuera del overlay, no escala) ---------- */
+  header{
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;
+    width:100%;margin-bottom:10px;
+  }
+  header h1{font-size:20px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+  header h1 span{color:var(--orange)}
+  header p{font-family:'IBM Plex Sans',sans-serif;color:#b8b8c4;font-size:13px;flex:1 1 240px;min-width:200px}
+  .lang{
+    margin-left:auto;display:flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#9a9aa8;
+  }
+  .lang button{
+    font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;
+    background:#101018;color:#c8c8d2;border:1px solid #2c2c38;border-radius:5px;
+    padding:6px 14px;cursor:pointer;transition:all .15s ease;
+  }
+  .lang button:hover{border-color:var(--cyan);color:#fff}
+  .lang button.active{background:var(--cyan);border-color:var(--cyan);color:#04141c}
+  .lang button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
   .legend{
-    max-width:960px;margin:0 auto 18px;display:flex;flex-wrap:wrap;gap:10px 22px;
-    font-size:13px;font-family:'IBM Plex Sans',sans-serif;color:#c8c8d2;
-    border:1px solid #26262f;padding:10px 14px;border-radius:6px;background:#101018;
+    width:100%;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px 22px;
+    font-size:12px;font-family:'IBM Plex Sans',sans-serif;color:#c8c8d2;
+    border:1px solid #26262f;padding:7px 12px;border-radius:6px;background:#101018;
   }
   .legend b{font-family:'Chakra Petch',sans-serif}
   .legend .sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 
-  /* Grilla del overlay */
-  .overlay{
-    max-width:960px;margin:0 auto;display:grid;gap:4px;
-    grid-template-columns:1fr 1fr;
-    grid-template-areas:"gpu cpu" "ram store" "fps store";
+  /* ---------- Escenario del overlay ----------
+     El overlay se diseña a un tamaño FIJO de 1200px de ancho, con
+     posiciones y tipografía estáticas (como el overlay real).
+     JS lo escala como un todo (transform: scale) para que entre en
+     la pantalla, sin mover ningún bloque de lugar. */
+  #stageWrap{position:relative;flex:1;width:100%}
+  #stage{
+    position:absolute;top:0;left:0;
+    width:1200px;
+    font-size:20px;             /* tamaño base del diseño: todo deriva de acá */
+    transform-origin:top left;
+    display:grid;gap:4px;
+    grid-template-columns:360px 380px 460px;
+    grid-template-rows:auto auto 1fr;
+    grid-template-areas:
+      "gpu gpu cpu"
+      "ram store store"
+      "fps store store";
   }
-  @media (max-width:720px){
-    .overlay{grid-template-columns:1fr;grid-template-areas:"gpu" "cpu" "ram" "store" "fps"}
-  }
-  .panel{padding:16px 18px;border-radius:4px}
-  .panel h2{color:var(--orange);font-size:clamp(18px,2.6vw,26px);letter-spacing:.05em;margin-bottom:10px}
+
+  .panel{padding:14px 18px;border-radius:4px;min-width:0}
+  .panel h2{color:var(--orange);font-size:1.3em;letter-spacing:.05em;margin-bottom:8px}
   .gpu{grid-area:gpu;background:#3a2e05}
   .cpu{grid-area:cpu;background:#0b2838}
   .ram{grid-area:ram;background:#1e0f33}
   .store{grid-area:store;background:#241105}
-  .fps{grid-area:fps;background:#0d0d0d}
-  .row{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin:9px 0;font-size:clamp(15px,2.2vw,20px)}
-  .lbl{color:var(--label);font-weight:600}
-  .sub{background:rgba(0,0,0,.25);margin:12px -18px;padding:10px 18px}
-  .sub:last-child{margin-bottom:-16px;padding-bottom:16px}
-  .disk{color:var(--green);font-size:clamp(15px,2.2vw,20px);font-weight:700;letter-spacing:.04em}
+  .fps{grid-area:fps;background:#0d0d0d;display:flex;flex-direction:column;justify-content:flex-end}
 
-  /* Sensores con tooltip */
+  .row{display:flex;flex-wrap:wrap;align-items:baseline;gap:5px 10px;margin:8px 0;font-size:1.05em}
+  .lbl{color:var(--label);font-weight:600}
+  .sub{background:rgba(0,0,0,.25);margin:10px -18px;padding:8px 18px}
+  .disk{color:var(--green);font-size:1.05em;font-weight:700;letter-spacing:.04em}
+  .cores{font-size:0.85em}
+
+  /* ---------- Sensores con tooltip ---------- */
   .s{
     position:relative;cursor:help;font-weight:700;
     border-bottom:1px dotted rgba(255,255,255,.45);
@@ -81,10 +112,10 @@
   .s::after{
     content:attr(data-tip);
     position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(4px);
-    width:max-content;max-width:min(270px,72vw);
+    width:max-content;max-width:300px;
     background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:6px;
     padding:9px 12px;
-    font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:400;line-height:1.45;
+    font-family:'IBM Plex Sans',sans-serif;font-size:0.68em;font-weight:400;line-height:1.45;
     color:#e8e8ee;text-transform:none;letter-spacing:0;
     opacity:0;visibility:hidden;pointer-events:none;
     transition:opacity .15s ease,transform .15s ease;
@@ -97,7 +128,7 @@
   }
   .s:hover::after,.s:focus-visible::after{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
   .s:hover::before,.s:focus-visible::before{opacity:1;visibility:visible}
-  /* variantes para bordes de pantalla */
+  /* variantes para bordes del escenario */
   .tl::after{left:0;transform:translateX(0) translateY(4px)}
   .tl:hover::after,.tl:focus-visible::after{transform:translateX(0) translateY(0)}
   .tl::before{left:14px}
@@ -105,11 +136,25 @@
   .tr:hover::after,.tr:focus-visible::after{transform:translateX(0) translateY(0)}
   .tr::before{left:auto;right:14px;transform:none}
 
-  .fps .big{font-size:clamp(30px,5vw,44px);letter-spacing:.03em}
-  .clock{color:var(--cyan);font-size:clamp(18px,3vw,26px);font-weight:700;margin-top:6px}
+  .fps .big{font-size:2.2em;letter-spacing:.03em}
+  .clock{color:var(--cyan);font-size:1.35em;font-weight:700;margin-top:4px}
+
+  /* ---------- Modo apilado: solo cuando la pantalla no puede
+     contener el layout (muy angosta). Los bloques pasan a una
+     columna; es el único caso en que se mueven de lugar. ---------- */
+  #stage.stack{
+    position:static;
+    width:100%;
+    transform:none !important;
+    font-size:17px;
+    grid-template-columns:1fr;
+    grid-template-rows:none;
+    grid-template-areas:"gpu" "cpu" "ram" "store" "fps";
+  }
+  #stage.stack .s::after{max-width:min(300px,80vw)}
 
   @media (prefers-reduced-motion:reduce){
-    .s::after,.s::before{transition:none}
+    .s::after,.s::before,.lang button{transition:none}
   }
 </style>
 </head>
@@ -117,176 +162,410 @@
 
 <header>
   <h1>Overlay <span>RivaTuner</span> explicado</h1>
-  <p>Pasá el mouse (o navegá con Tab) sobre cualquier valor para ver qué mide ese sensor. Los colores del overlay siguen un código fijo:</p>
+  <p id="intro">Pasá el mouse (o navegá con Tab) sobre cualquier valor para ver qué mide ese sensor.</p>
+  <div class="lang" role="group" aria-label="Idioma de los tooltips">
+    <span id="langLabel">Idioma de tooltips:</span>
+    <button id="btn-es" class="active" type="button" onclick="setLang('es')">ES</button>
+    <button id="btn-en" type="button" onclick="setLang('en')">EN</button>
+  </div>
 </header>
 
 <div class="legend">
-  <span><span class="sw" style="background:var(--cyan)"></span><b style="color:var(--cyan)">Cian</b> = valor actual</span>
-  <span><span class="sw" style="background:var(--yellow)"></span><b style="color:var(--yellow)">Amarillo</b> = máximo de la sesión</span>
-  <span><span class="sw" style="background:var(--pink)"></span><b style="color:var(--pink)">Rosa</b> = mínimo de la sesión</span>
-  <span><span class="sw" style="background:var(--orange)"></span><b style="color:var(--orange)">Naranja</b> = nombre del componente</span>
+  <span><span class="sw" style="background:var(--cyan)"></span><b style="color:var(--cyan)">Cian</b> <span data-l="es:= valor actual|en:= current value">= valor actual</span></span>
+  <span><span class="sw" style="background:var(--yellow)"></span><b style="color:var(--yellow)">Amarillo / Yellow</b> <span data-l="es:= máximo de la sesión|en:= session maximum">= máximo de la sesión</span></span>
+  <span><span class="sw" style="background:var(--pink)"></span><b style="color:var(--pink)">Rosa / Pink</b> <span data-l="es:= mínimo de la sesión|en:= session minimum">= mínimo de la sesión</span></span>
+  <span><span class="sw" style="background:var(--orange)"></span><b style="color:var(--orange)">Naranja / Orange</b> <span data-l="es:= nombre del componente|en:= component name">= nombre del componente</span></span>
 </div>
 
-<div class="overlay">
+<div id="stageWrap">
+<div id="stage">
 
   <!-- ===================== GPU ===================== -->
   <section class="panel gpu">
-    <h2><span class="s tl w" data-tip="Tu placa de video (GPU): NVIDIA GeForce RTX 4080 SUPER con 16 GB de VRAM. Todos los datos de este panel son de la GPU." style="color:var(--orange)">RTX 4080 SUPER</span></h2>
+    <h2><span class="s tl w" style="color:var(--orange)"
+      data-es="Tu placa de video (GPU): NVIDIA GeForce RTX 4080 SUPER con 16 GB de VRAM. Todos los datos de este panel son de la GPU."
+      data-en="Your graphics card (GPU): NVIDIA GeForce RTX 4080 SUPER with 16 GB of VRAM. Everything in this panel is GPU data.">RTX 4080 SUPER</span></h2>
     <div class="row">
-      <span class="s tl c" data-tip="Temperatura actual del núcleo de la GPU. 29 °C indica que está en reposo (idle). En juego lo normal es 60–75 °C.">29<sup>°C</sup></span>
+      <span class="s tl c"
+        data-es="Temperatura actual del núcleo de la GPU. 29 °C indica reposo (idle). En juego lo normal es 60–75 °C."
+        data-en="Current GPU core temperature. 29 °C means it's idle. While gaming, 60–75 °C is typical.">29<sup>°C</sup></span>
       <span class="lbl">Max:</span>
-      <span class="s y" data-tip="Temperatura máxima que alcanzó la GPU desde que arrancó el monitoreo (máximo de sesión).">29<sup>°C</sup></span>
-      <span class="s c" data-tip="Hot Spot: la temperatura del punto más caliente del chip. Siempre es mayor que la temperatura promedio del núcleo. Es normal una diferencia de 8–15 °C.">36<sup>°C</sup></span>
-      <span class="s c" data-tip="Temperatura de la memoria VRAM (memory junction). La GDDR6X puede operar con seguridad hasta ~95 °C.">38<sup>°C</sup></span>
-      <span class="s tr c" data-tip="Límite térmico (Temp Limit): temperatura objetivo a la que la GPU empieza a bajar frecuencias para protegerse (throttling). 84 °C es el valor por defecto de NVIDIA.">84<sup>°C</sup></span>
+      <span class="s y"
+        data-es="Temperatura máxima que alcanzó la GPU desde que arrancó el monitoreo (máximo de sesión)."
+        data-en="Highest GPU temperature recorded since monitoring started (session maximum).">29<sup>°C</sup></span>
+      <span class="s c"
+        data-es="Hot Spot: temperatura del punto más caliente del chip. Siempre es mayor que la del núcleo; una diferencia de 8–15 °C es normal."
+        data-en="Hot Spot: temperature of the hottest point on the die. Always higher than the core reading; an 8–15 °C gap is normal.">36<sup>°C</sup></span>
+      <span class="s c"
+        data-es="Temperatura de la memoria VRAM (memory junction). La GDDR6X puede operar con seguridad hasta ~95 °C."
+        data-en="VRAM temperature (memory junction). GDDR6X can safely run up to ~95 °C.">38<sup>°C</sup></span>
+      <span class="s c"
+        data-es="Límite térmico (Temp Limit): temperatura objetivo a la que la GPU baja frecuencias para protegerse (throttling). 84 °C es el valor por defecto de NVIDIA."
+        data-en="Temp Limit: target temperature at which the GPU lowers clocks to protect itself (throttling). 84 °C is NVIDIA's default.">84<sup>°C</sup></span>
     </div>
     <div class="row">
       <span class="lbl">Core:</span>
-      <span class="s c" data-tip="Frecuencia actual del núcleo gráfico. 285 MHz es frecuencia de reposo: la GPU baja el reloj cuando no tiene carga. En juego sube a ~2500–2800 MHz.">285<sup>MHz</sup></span>
+      <span class="s c"
+        data-es="Frecuencia actual del núcleo gráfico. 285 MHz es frecuencia de reposo: la GPU baja el reloj sin carga. En juego sube a ~2500–2800 MHz."
+        data-en="Current GPU core clock. 285 MHz is an idle clock: the GPU downclocks when there's no load. In games it boosts to ~2500–2800 MHz.">285<sup>MHz</sup></span>
       <span class="lbl">Core Usage:</span>
-      <span class="s tr c" data-tip="Porcentaje de uso del núcleo de la GPU. 30% con 285 MHz sugiere carga liviana (escritorio, video o un juego poco exigente).">30<sup>%</sup></span>
+      <span class="s c"
+        data-es="Porcentaje de uso del núcleo de la GPU. 30% con 285 MHz sugiere carga liviana (escritorio, video o un juego poco exigente)."
+        data-en="GPU core usage percentage. 30% at 285 MHz suggests a light load (desktop, video, or an undemanding game).">30<sup>%</sup></span>
     </div>
     <div class="row">
       <span class="lbl">Power:</span>
-      <span class="s c" data-tip="Consumo eléctrico actual de la placa de video en watts. 26 W es consumo de reposo; en juego una 4080 SUPER puede superar los 300 W.">26<sup>W</sup></span>
-      <span class="s y" data-tip="Consumo máximo registrado en la sesión.">29<sup>W</sup></span>
+      <span class="s c"
+        data-es="Consumo eléctrico actual de la placa de video en watts. 26 W es consumo de reposo; en juego una 4080 SUPER puede superar los 300 W."
+        data-en="Current power draw of the graphics card in watts. 26 W is idle; while gaming a 4080 SUPER can exceed 300 W.">26<sup>W</sup></span>
+      <span class="s y"
+        data-es="Consumo máximo registrado en la sesión."
+        data-en="Maximum power draw recorded this session.">29<sup>W</sup></span>
       <span class="lbl">Power Usage:</span>
-      <span class="s tr c" data-tip="Porcentaje del límite de potencia (TDP) que está usando la GPU. El límite de la 4080 SUPER es 320 W, así que 17% ≈ 55 W disponibles de margen enorme.">17<sup>%</sup></span>
+      <span class="s c"
+        data-es="Porcentaje del límite de potencia (TDP) en uso. El límite de la 4080 SUPER es 320 W, así que 17% ≈ 55 W: muchísimo margen."
+        data-en="Percentage of the power limit (TDP) in use. The 4080 SUPER's limit is 320 W, so 17% ≈ 55 W — plenty of headroom.">17<sup>%</sup></span>
     </div>
     <div class="row">
       <span class="lbl">Core Voltage:</span>
-      <span class="s c" data-tip="Voltaje actual aplicado al núcleo de la GPU. Sube y baja junto con la frecuencia (a más MHz, más voltaje). En reposo ronda 0.9 V; a plena carga ~1.05–1.1 V.">0.915<sup>V</sup></span>
-      <span class="s tr y" data-tip="Voltaje máximo del núcleo registrado en la sesión.">0.915<sup>V</sup></span>
+      <span class="s c"
+        data-es="Voltaje actual aplicado al núcleo de la GPU. Sube y baja junto con la frecuencia. En reposo ronda 0.9 V; a plena carga ~1.05–1.1 V."
+        data-en="Current voltage applied to the GPU core. It scales with clock speed. Around 0.9 V at idle; ~1.05–1.1 V under full load.">0.915<sup>V</sup></span>
+      <span class="s y"
+        data-es="Voltaje máximo del núcleo registrado en la sesión."
+        data-en="Maximum core voltage recorded this session.">0.915<sup>V</sup></span>
     </div>
     <div class="row">
       <span class="lbl">VRAM Usage:</span>
-      <span class="s c" data-tip="Memoria de video ocupada en este momento: texturas, framebuffers, etc. 1.37 GB es típico de escritorio.">1.37<sup>GB</sup></span>
+      <span class="s c"
+        data-es="Memoria de video ocupada en este momento: texturas, framebuffers, etc. 1.37 GB es típico de escritorio."
+        data-en="Video memory currently in use: textures, framebuffers, etc. 1.37 GB is typical desktop usage.">1.37<sup>GB</sup></span>
       <span class="lbl">/</span>
-      <span class="s tr c" data-tip="Total de VRAM de la placa: 16 GB (se muestra 15.99 por redondeo binario).">15.99<sup>GB</sup></span>
+      <span class="s c"
+        data-es="Total de VRAM de la placa: 16 GB (se muestra 15.99 por redondeo binario)."
+        data-en="Total VRAM on the card: 16 GB (shown as 15.99 due to binary rounding).">15.99<sup>GB</sup></span>
     </div>
   </section>
 
   <!-- ===================== CPU ===================== -->
   <section class="panel cpu">
-    <h2><span class="s tl w" data-tip="Tu procesador (CPU): AMD Ryzen 7 9700X, 8 núcleos / 16 hilos, arquitectura Zen 5." style="color:var(--orange)">R7 9700X</span></h2>
+    <h2><span class="s tl w" style="color:var(--orange)"
+      data-es="Tu procesador (CPU): AMD Ryzen 7 9700X, 8 núcleos / 16 hilos, arquitectura Zen 5."
+      data-en="Your processor (CPU): AMD Ryzen 7 9700X, 8 cores / 16 threads, Zen 5 architecture.">R7 9700X</span></h2>
     <div class="row">
-      <span class="s tl c" data-tip="Temperatura actual del procesador (Tctl/Tdie). Los Ryzen suelen mostrar picos breves aunque estén casi en reposo; 58 °C es normal. El límite del 9700X es 95 °C.">58<sup>°C</sup></span>
+      <span class="s tl c"
+        data-es="Temperatura actual del procesador (Tctl/Tdie). Los Ryzen muestran picos breves incluso casi en reposo; 58 °C es normal. El límite del 9700X es 95 °C."
+        data-en="Current CPU temperature (Tctl/Tdie). Ryzen chips show brief spikes even near idle; 58 °C is normal. The 9700X's limit is 95 °C.">58<sup>°C</sup></span>
       <span class="lbl">Max:</span>
-      <span class="s tr y" data-tip="Temperatura máxima del CPU registrada en la sesión.">58<sup>°C</sup></span>
+      <span class="s y"
+        data-es="Temperatura máxima del CPU registrada en la sesión."
+        data-en="Maximum CPU temperature recorded this session.">58<sup>°C</sup></span>
     </div>
     <div class="row">
       <span class="lbl">Usage:</span>
-      <span class="s c" data-tip="Uso total del procesador, promediando todos los núcleos. 15% = carga liviana.">15<sup>%</sup></span>
+      <span class="s c"
+        data-es="Uso total del procesador, promediando todos los núcleos. 15% = carga liviana."
+        data-en="Total CPU usage, averaged across all cores. 15% = light load.">15<sup>%</sup></span>
     </div>
     <div class="row">
       <span class="lbl">Power:</span>
-      <span class="s c" data-tip="Consumo eléctrico actual del CPU (package power). El 9700X tiene un TDP de 65 W (PPT 88 W), así que 50 W es carga parcial.">50<sup>W</sup></span>
-      <span class="s tr y" data-tip="Consumo máximo del CPU registrado en la sesión.">57<sup>W</sup></span>
+      <span class="s c"
+        data-es="Consumo eléctrico actual del CPU (package power). El 9700X tiene un TDP de 65 W (PPT 88 W), así que 50 W es carga parcial."
+        data-en="Current CPU power draw (package power). The 9700X has a 65 W TDP (88 W PPT), so 50 W is a partial load.">50<sup>W</sup></span>
+      <span class="s y"
+        data-es="Consumo máximo del CPU registrado en la sesión."
+        data-en="Maximum CPU power draw recorded this session.">57<sup>W</sup></span>
     </div>
-    <div class="row" style="font-size:clamp(13px,1.9vw,17px)">
-      <span class="s tl w" data-tip="Frecuencia del núcleo 1. Es el que está trabajando ahora: 4138 MHz es cerca de su velocidad de boost.">4138<sup>MHz</sup></span>
-      <span class="s w" data-tip="Frecuencia del núcleo 2. Carga intermedia.">1948<sup>MHz</sup></span>
-      <span class="s w" data-tip="Frecuencia del núcleo 3. Son 'relojes efectivos': cuando un núcleo está dormido gran parte del tiempo, el promedio da valores muy bajos como este.">420<sup>MHz</sup></span>
-      <span class="s w" data-tip="Frecuencia del núcleo 4.">1067<sup>MHz</sup></span>
-      <span class="s w" data-tip="Frecuencia del núcleo 5.">1490<sup>MHz</sup></span>
-      <span class="s w" data-tip="Frecuencia del núcleo 6. Mayormente inactivo.">641<sup>MHz</sup></span>
-      <span class="s w" data-tip="Frecuencia del núcleo 7. Casi dormido (ahorro de energía).">251<sup>MHz</sup></span>
-      <span class="s tr w" data-tip="Frecuencia del núcleo 8. Casi dormido. Que haya núcleos a 100–600 MHz es bueno: significa que el ahorro de energía funciona.">124<sup>MHz</sup></span>
+    <div class="row cores">
+      <span class="s tl w"
+        data-es="Frecuencia del núcleo 1. Es el que está trabajando ahora: 4138 MHz es cerca de su velocidad de boost."
+        data-en="Core 1 clock speed. This one is doing the work right now: 4138 MHz is near its boost speed.">4138<sup>MHz</sup></span>
+      <span class="s w"
+        data-es="Frecuencia del núcleo 2. Carga intermedia."
+        data-en="Core 2 clock speed. Moderate load.">1948<sup>MHz</sup></span>
+      <span class="s w"
+        data-es="Frecuencia del núcleo 3. Son 'relojes efectivos': cuando un núcleo duerme gran parte del tiempo, el promedio da valores muy bajos como este."
+        data-en="Core 3 clock speed. These are 'effective clocks': when a core sleeps most of the time, the average comes out very low like this.">420<sup>MHz</sup></span>
+      <span class="s w"
+        data-es="Frecuencia del núcleo 4."
+        data-en="Core 4 clock speed.">1067<sup>MHz</sup></span>
+      <span class="s w"
+        data-es="Frecuencia del núcleo 5."
+        data-en="Core 5 clock speed.">1490<sup>MHz</sup></span>
+      <span class="s w"
+        data-es="Frecuencia del núcleo 6. Mayormente inactivo."
+        data-en="Core 6 clock speed. Mostly inactive.">641<sup>MHz</sup></span>
+      <span class="s w"
+        data-es="Frecuencia del núcleo 7. Casi dormido (ahorro de energía)."
+        data-en="Core 7 clock speed. Nearly asleep (power saving).">251<sup>MHz</sup></span>
+      <span class="s tr w"
+        data-es="Frecuencia del núcleo 8. Que haya núcleos a 100–600 MHz es bueno: el ahorro de energía funciona."
+        data-en="Core 8 clock speed. Cores sitting at 100–600 MHz is a good sign: power saving is working.">124<sup>MHz</sup></span>
     </div>
   </section>
 
   <!-- ===================== RAM ===================== -->
   <section class="panel ram">
-    <h2><span class="s tl w" data-tip="Memoria RAM del sistema: 64 GB de DDR5 en dos módulos." style="color:var(--orange)">RAM</span></h2>
+    <h2><span class="s tl w" style="color:var(--orange)"
+      data-es="Memoria RAM del sistema: 64 GB de DDR5 en dos módulos."
+      data-en="System RAM: 64 GB of DDR5 across two modules.">RAM</span></h2>
     <div class="row">
-      <span class="s tl c" data-tip="Temperatura actual del primer módulo de RAM. Las DDR5 traen sensor propio; 41 °C es totalmente normal (preocupante recién arriba de ~60 °C).">41<sup>°C</sup></span>
+      <span class="s tl c"
+        data-es="Temperatura actual del primer módulo de RAM. Las DDR5 traen sensor propio; 41 °C es normal (preocupante recién arriba de ~60 °C)."
+        data-en="Current temperature of the first RAM stick. DDR5 has a built-in sensor; 41 °C is normal (only a concern above ~60 °C).">41<sup>°C</sup></span>
       <span class="lbl">Max:</span>
-      <span class="s y" data-tip="Máxima temperatura del módulo 1 en la sesión.">41<sup>°C</sup></span>
+      <span class="s y"
+        data-es="Máxima temperatura del módulo 1 en la sesión."
+        data-en="Maximum temperature of stick 1 this session.">41<sup>°C</sup></span>
     </div>
     <div class="row">
-      <span class="s tl c" data-tip="Temperatura actual del segundo módulo de RAM.">41<sup>°C</sup></span>
+      <span class="s tl c"
+        data-es="Temperatura actual del segundo módulo de RAM."
+        data-en="Current temperature of the second RAM stick.">41<sup>°C</sup></span>
       <span class="lbl">Max:</span>
-      <span class="s y" data-tip="Máxima temperatura del módulo 2 en la sesión.">41<sup>°C</sup></span>
+      <span class="s y"
+        data-es="Máxima temperatura del módulo 2 en la sesión."
+        data-en="Maximum temperature of stick 2 this session.">41<sup>°C</sup></span>
     </div>
     <div class="row">
-      <span class="s tl c" data-tip="Frecuencia efectiva de la memoria: DDR5-5800 (velocidad de transferencia en MT/s). El reloj real es la mitad, 2900 MHz, porque DDR = Double Data Rate.">5800<sup>MHz</sup></span>
+      <span class="s tl c"
+        data-es="Frecuencia efectiva de la memoria: DDR5-5800 (MT/s). El reloj real es la mitad, 2900 MHz, porque DDR = Double Data Rate."
+        data-en="Effective memory speed: DDR5-5800 (MT/s). The real clock is half that, 2900 MHz, because DDR = Double Data Rate.">5800<sup>MHz</sup></span>
     </div>
     <div class="row">
-      <span class="s tl c" data-tip="RAM ocupada en este momento por Windows y los programas abiertos.">15.23<sup>GB</sup></span>
+      <span class="s tl c"
+        data-es="RAM ocupada en este momento por Windows y los programas abiertos."
+        data-en="RAM currently used by Windows and open programs.">15.23<sup>GB</sup></span>
       <span class="lbl">/</span>
-      <span class="s c" data-tip="Total de RAM instalada: 64 GB.">64<sup>GB</sup></span>
+      <span class="s c"
+        data-es="Total de RAM instalada: 64 GB."
+        data-en="Total installed RAM: 64 GB.">64<sup>GB</sup></span>
     </div>
     <div class="row">
       <span class="lbl">Usage:</span>
-      <span class="s c" data-tip="Porcentaje de RAM en uso (15.23 de 64 GB ≈ 25%). Tenés muchísimo margen libre.">25<sup>%</sup></span>
+      <span class="s c"
+        data-es="Porcentaje de RAM en uso (15.23 de 64 GB ≈ 25%). Tenés muchísimo margen libre."
+        data-en="Percentage of RAM in use (15.23 of 64 GB ≈ 25%). You have tons of headroom.">25<sup>%</sup></span>
     </div>
   </section>
 
   <!-- ===================== ALMACENAMIENTO / CHIPSET / PSU ===================== -->
   <section class="panel store">
-    <div class="sub" style="margin-top:-16px;padding-top:16px">
-      <div class="disk"><span class="s tl g" data-tip="Tu SSD principal: Samsung 990 PRO, un NVMe M.2 PCIe 4.0 de alta gama.">SSD M.2: 990 PRO</span></div>
+    <div class="sub" style="margin-top:-14px;padding-top:14px">
+      <div class="disk"><span class="s tl g"
+        data-es="Tu SSD principal: Samsung 990 PRO, un NVMe M.2 PCIe 4.0 de alta gama."
+        data-en="Your main SSD: Samsung 990 PRO, a high-end PCIe 4.0 NVMe M.2 drive.">SSD M.2: 990 PRO</span></div>
       <div class="row">
-        <span class="s tl c" data-tip="Temperatura actual del SSD. 37 °C en reposo es excelente; los NVMe empiezan a reducir velocidad (throttling) cerca de 70–80 °C.">37<sup>°C</sup></span>
-        <span class="s y" data-tip="Temperatura máxima del 990 PRO en la sesión.">37<sup>°C</sup></span>
-        <span class="s c" data-tip="Actividad de escritura: porcentaje del tiempo que el disco pasó escribiendo datos. 1% = casi inactivo.">1<sup>% Write</sup></span>
-        <span class="s tr c" data-tip="Actividad de lectura: porcentaje del tiempo que el disco pasó leyendo datos.">0<sup>% Read</sup></span>
+        <span class="s tl c"
+          data-es="Temperatura actual del SSD. 37 °C en reposo es excelente; los NVMe reducen velocidad (throttling) cerca de 70–80 °C."
+          data-en="Current SSD temperature. 37 °C at idle is excellent; NVMe drives throttle around 70–80 °C.">37<sup>°C</sup></span>
+        <span class="s y"
+          data-es="Temperatura máxima del 990 PRO en la sesión."
+          data-en="Maximum 990 PRO temperature this session.">37<sup>°C</sup></span>
+        <span class="s c"
+          data-es="Actividad de escritura: porcentaje del tiempo que el disco pasó escribiendo datos. 1% = casi inactivo."
+          data-en="Write activity: percentage of time the drive spent writing data. 1% = nearly idle.">1<sup>% Write</sup></span>
+        <span class="s c"
+          data-es="Actividad de lectura: porcentaje del tiempo que el disco pasó leyendo datos."
+          data-en="Read activity: percentage of time the drive spent reading data.">0<sup>% Read</sup></span>
       </div>
     </div>
     <div class="sub">
-      <div class="disk"><span class="s tl g" data-tip="Tu segundo SSD: Samsung 970 EVO Plus, NVMe M.2 PCIe 3.0.">SSD M.2: 970 EVO+</span></div>
+      <div class="disk"><span class="s tl g"
+        data-es="Tu segundo SSD: Samsung 970 EVO Plus, NVMe M.2 PCIe 3.0."
+        data-en="Your second SSD: Samsung 970 EVO Plus, a PCIe 3.0 NVMe M.2 drive.">SSD M.2: 970 EVO+</span></div>
       <div class="row">
-        <span class="s tl c" data-tip="Temperatura actual del 970 EVO Plus.">33<sup>°C</sup></span>
-        <span class="s y" data-tip="Temperatura máxima del 970 EVO+ en la sesión.">33<sup>°C</sup></span>
-        <span class="s c" data-tip="Actividad de escritura del segundo disco.">1<sup>% Write</sup></span>
-        <span class="s tr c" data-tip="Actividad de lectura del segundo disco.">0<sup>% Read</sup></span>
+        <span class="s tl c"
+          data-es="Temperatura actual del 970 EVO Plus."
+          data-en="Current 970 EVO Plus temperature.">33<sup>°C</sup></span>
+        <span class="s y"
+          data-es="Temperatura máxima del 970 EVO+ en la sesión."
+          data-en="Maximum 970 EVO+ temperature this session.">33<sup>°C</sup></span>
+        <span class="s c"
+          data-es="Actividad de escritura del segundo disco."
+          data-en="Write activity of the second drive.">1<sup>% Write</sup></span>
+        <span class="s c"
+          data-es="Actividad de lectura del segundo disco."
+          data-en="Read activity of the second drive.">0<sup>% Read</sup></span>
       </div>
     </div>
-    <div class="row" style="margin-top:14px">
-      <span class="s tl o" data-tip="Chipset de la placa madre (en AM5: B650/X670/X870). Es el chip que maneja puertos USB, SATA y líneas PCIe extra.">CHIPSET</span>
-      <span class="s c" data-tip="Temperatura actual del chipset. Suelen correr calientes (50–65 °C) porque casi siempre tienen disipador pasivo, sin ventilador. 56 °C es normal.">56<sup>°C</sup></span>
+    <div class="row" style="margin-top:12px">
+      <span class="s tl o"
+        data-es="Chipset de la placa madre (en AM5: B650/X670/X870). Maneja puertos USB, SATA y líneas PCIe extra."
+        data-en="Motherboard chipset (on AM5: B650/X670/X870). It handles USB ports, SATA, and extra PCIe lanes.">CHIPSET</span>
+      <span class="s c"
+        data-es="Temperatura actual del chipset. Suelen correr calientes (50–65 °C) porque casi siempre tienen disipador pasivo. 56 °C es normal."
+        data-en="Current chipset temperature. They usually run warm (50–65 °C) since most have a passive heatsink. 56 °C is normal.">56<sup>°C</sup></span>
       <span class="lbl">Max:</span>
-      <span class="s y" data-tip="Temperatura máxima del chipset en la sesión.">56<sup>°C</sup></span>
+      <span class="s y"
+        data-es="Temperatura máxima del chipset en la sesión."
+        data-en="Maximum chipset temperature this session.">56<sup>°C</sup></span>
     </div>
     <div class="row">
-      <span class="s tl o" data-tip="Fuente de alimentación (PSU). Que reporte datos significa que es una fuente digital con monitoreo (por ejemplo, con conexión USB interna).">PSU</span>
-      <span class="s c" data-tip="Temperatura interna actual de la fuente. 40 °C es un valor sano.">40<sup>°C</sup></span>
+      <span class="s tl o"
+        data-es="Fuente de alimentación (PSU). Que reporte datos significa que es una fuente digital con monitoreo (por ejemplo, con conexión USB interna)."
+        data-en="Power supply (PSU). Reporting data means it's a digital PSU with monitoring (e.g., an internal USB connection).">PSU</span>
+      <span class="s c"
+        data-es="Temperatura interna actual de la fuente. 40 °C es un valor sano."
+        data-en="Current internal PSU temperature. 40 °C is a healthy value.">40<sup>°C</sup></span>
       <span class="lbl">Max:</span>
-      <span class="s y" data-tip="Temperatura máxima de la fuente en la sesión.">40<sup>°C</sup></span>
+      <span class="s y"
+        data-es="Temperatura máxima de la fuente en la sesión."
+        data-en="Maximum PSU temperature this session.">40<sup>°C</sup></span>
     </div>
     <div class="row">
-      <span class="s tl o" data-tip="Línea de +3.3 V de la fuente: alimenta principalmente componentes de la placa madre y ranuras M.2. Tolerancia ATX: ±5% (3.14–3.47 V).">+3V</span>
-      <span class="s c" data-tip="Voltaje actual de la línea de 3.3 V. 3.31 V está perfecto.">3.31<sup>V</sup></span>
-      <span class="s p" data-tip="Voltaje mínimo registrado en la sesión. Que sea igual al actual indica una línea muy estable.">3.31<sup>V</sup></span>
-      <span class="s tr y" data-tip="Voltaje máximo registrado en la sesión.">3.31<sup>V</sup></span>
+      <span class="s tl o"
+        data-es="Línea de +3.3 V: alimenta principalmente la placa madre y ranuras M.2. Tolerancia ATX: ±5% (3.14–3.47 V)."
+        data-en="+3.3 V rail: mainly powers the motherboard and M.2 slots. ATX tolerance: ±5% (3.14–3.47 V).">+3V</span>
+      <span class="s c"
+        data-es="Voltaje actual de la línea de 3.3 V. 3.31 V está perfecto."
+        data-en="Current 3.3 V rail voltage. 3.31 V is perfect.">3.31<sup>V</sup></span>
+      <span class="s p"
+        data-es="Voltaje mínimo registrado en la sesión. Que sea igual al actual indica una línea muy estable."
+        data-en="Minimum voltage recorded this session. Matching the current value means a very stable rail.">3.31<sup>V</sup></span>
+      <span class="s y"
+        data-es="Voltaje máximo registrado en la sesión."
+        data-en="Maximum voltage recorded this session.">3.31<sup>V</sup></span>
     </div>
     <div class="row">
-      <span class="s tl o" data-tip="Línea de +5 V: alimenta puertos USB, SATA y parte de la placa. Tolerancia ATX: ±5% (4.75–5.25 V).">+5V</span>
-      <span class="s c" data-tip="Voltaje actual de la línea de 5 V. 5.02 V, dentro de especificación.">5.02<sup>V</sup></span>
-      <span class="s p" data-tip="Mínimo de la sesión en la línea de 5 V.">5.02<sup>V</sup></span>
-      <span class="s tr y" data-tip="Máximo de la sesión en la línea de 5 V.">5.06<sup>V</sup></span>
+      <span class="s tl o"
+        data-es="Línea de +5 V: alimenta puertos USB, SATA y parte de la placa. Tolerancia ATX: ±5% (4.75–5.25 V)."
+        data-en="+5 V rail: powers USB ports, SATA, and parts of the board. ATX tolerance: ±5% (4.75–5.25 V).">+5V</span>
+      <span class="s c"
+        data-es="Voltaje actual de la línea de 5 V. 5.02 V, dentro de especificación."
+        data-en="Current 5 V rail voltage. 5.02 V, within spec.">5.02<sup>V</sup></span>
+      <span class="s p"
+        data-es="Mínimo de la sesión en la línea de 5 V."
+        data-en="Session minimum on the 5 V rail.">5.02<sup>V</sup></span>
+      <span class="s y"
+        data-es="Máximo de la sesión en la línea de 5 V."
+        data-en="Session maximum on the 5 V rail.">5.06<sup>V</sup></span>
     </div>
     <div class="row">
-      <span class="s tl o" data-tip="Línea de +12 V: la más importante, alimenta CPU y GPU. Tolerancia ATX: ±5% (11.4–12.6 V).">+12V</span>
-      <span class="s c" data-tip="Voltaje actual de la línea de 12 V. 11.88 V está dentro de la tolerancia; una caída leve bajo carga es normal.">11.88<sup>V</sup></span>
-      <span class="s p" data-tip="Mínimo de la sesión en la línea de 12 V. Si bajara de 11.4 V bajo carga, sería señal de una fuente al límite.">11.88<sup>V</sup></span>
-      <span class="s tr y" data-tip="Máximo de la sesión en la línea de 12 V.">11.88<sup>V</sup></span>
+      <span class="s tl o"
+        data-es="Línea de +12 V: la más importante, alimenta CPU y GPU. Tolerancia ATX: ±5% (11.4–12.6 V)."
+        data-en="+12 V rail: the most important one, it powers the CPU and GPU. ATX tolerance: ±5% (11.4–12.6 V).">+12V</span>
+      <span class="s c"
+        data-es="Voltaje actual de la línea de 12 V. 11.88 V está dentro de la tolerancia; una caída leve bajo carga es normal."
+        data-en="Current 12 V rail voltage. 11.88 V is within tolerance; a slight drop under load is normal.">11.88<sup>V</sup></span>
+      <span class="s p"
+        data-es="Mínimo de la sesión en la línea de 12 V. Si bajara de 11.4 V bajo carga, sería señal de una fuente al límite."
+        data-en="Session minimum on the 12 V rail. Dropping below 11.4 V under load would signal a PSU near its limit.">11.88<sup>V</sup></span>
+      <span class="s y"
+        data-es="Máximo de la sesión en la línea de 12 V."
+        data-en="Session maximum on the 12 V rail.">11.88<sup>V</sup></span>
     </div>
   </section>
 
   <!-- ===================== FPS / RELOJ ===================== -->
   <section class="panel fps">
     <div class="row">
-      <span class="s tl g" data-tip="API gráfica que usa la aplicación monitoreada: Direct3D 9 (DirectX 9). Es una API antigua, típica de juegos viejos o de ciertos launchers/overlays.">D3D9</span>
-      <span class="s w" data-tip="Frametime: cuánto tarda en generarse cada cuadro. 15.3 ms ≈ 65 FPS. Un frametime estable importa más que el número de FPS: los saltos bruscos se sienten como tirones (stuttering).">15.3<sup>ms</sup></span>
+      <span class="s tl g"
+        data-es="API gráfica que usa la aplicación monitoreada: Direct3D 9 (DirectX 9). Es una API antigua, típica de juegos viejos o de ciertos launchers/overlays."
+        data-en="Graphics API used by the monitored app: Direct3D 9 (DirectX 9). It's an old API, typical of older games or certain launchers/overlays.">D3D9</span>
+      <span class="s w"
+        data-es="Frametime: cuánto tarda en generarse cada cuadro. 15.3 ms ≈ 65 FPS. Un frametime estable importa más que el número de FPS: los saltos bruscos se sienten como tirones (stuttering)."
+        data-en="Frametime: how long each frame takes to render. 15.3 ms ≈ 65 FPS. A stable frametime matters more than the FPS number: sudden spikes feel like stuttering.">15.3<sup>ms</sup></span>
     </div>
     <div class="row big">
-      <span class="s tl w" data-tip="Cuadros por segundo que está renderizando la aplicación. 69 FPS suele indicar un límite de FPS activo o V-Sync, más que falta de potencia (mirá el uso de GPU: solo 30%).">69 FPS</span>
+      <span class="s tl w"
+        data-es="Cuadros por segundo que renderiza la aplicación. 69 FPS suele indicar un límite de FPS o V-Sync activo, más que falta de potencia (mirá el uso de GPU: solo 30%)."
+        data-en="Frames per second the app is rendering. 69 FPS usually points to an FPS cap or V-Sync being active rather than lack of power (note the GPU usage: only 30%).">69 FPS</span>
     </div>
-    <div class="clock"><span class="s tl c" data-tip="Hora actual del sistema. Útil para saber cuánto llevás jugando de un vistazo.">04:29:58 PM</span></div>
+    <div class="clock"><span class="s tl c"
+      data-es="Hora actual del sistema. Útil para saber cuánto llevás jugando de un vistazo."
+      data-en="Current system time. Handy for keeping track of how long you've been playing.">04:29:58 PM</span></div>
   </section>
 
-</div>
+</div><!-- /#stage -->
+</div><!-- /#stageWrap -->
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- Idioma de tooltips ---------- */
+  window.setLang = function(lang){
+    document.querySelectorAll('.s').forEach(function(el){
+      var t = lang === 'en' ? el.dataset.en : el.dataset.es;
+      if(t) el.setAttribute('data-tip', t);
+    });
+    document.querySelectorAll('[data-l]').forEach(function(el){
+      el.dataset.l.split('|').forEach(function(p){
+        var i = p.indexOf(':');
+        if(p.slice(0,i) === lang) el.textContent = p.slice(i+1);
+      });
+    });
+    var es = document.getElementById('btn-es'), en = document.getElementById('btn-en');
+    if(es) es.classList.toggle('active', lang === 'es');
+    if(en) en.classList.toggle('active', lang === 'en');
+    var intro = document.getElementById('intro');
+    if(intro) intro.textContent = lang === 'en'
+      ? 'Hover (or Tab through) any value to see what that sensor measures.'
+      : 'Pasá el mouse (o navegá con Tab) sobre cualquier valor para ver qué mide ese sensor.';
+    var lbl = document.getElementById('langLabel');
+    if(lbl) lbl.textContent = lang === 'en' ? 'Tooltip language:' : 'Idioma de tooltips:';
+    try{ localStorage.setItem('tipLang', lang); }catch(e){}
+  };
+
+  var saved = 'es';
+  try{ saved = localStorage.getItem('tipLang') || 'es'; }catch(e){}
+  window.setLang(saved);
+
+  /* ---------- Escalado del overlay ----------
+     El overlay tiene un diseño fijo de 1200px. Acá se calcula un
+     único factor de escala para que entre completo en el espacio
+     disponible (ancho Y alto), manteniendo posiciones intactas.
+     Debajo de 700px de ancho se apilan los bloques en una columna. */
+  var DESIGN_W = 1200;
+  var STACK_BREAKPOINT = 700;
+  var stage = document.getElementById('stage');
+  var wrap  = document.getElementById('stageWrap');
+
+  function fit(){
+    if(!stage || !wrap) return;
+
+    if(window.innerWidth <= STACK_BREAKPOINT){
+      stage.classList.add('stack');
+      stage.style.transform = '';
+      stage.style.left = '';
+      wrap.style.height = 'auto';
+      return;
+    }
+
+    stage.classList.remove('stack');
+
+    // Medir la altura natural del diseño sin transformación
+    stage.style.transform = 'none';
+    var designH = stage.offsetHeight;
+
+    var availW = wrap.clientWidth;
+    var availH = window.innerHeight - wrap.getBoundingClientRect().top - 12;
+    if(availH < 100) availH = 100;
+
+    var scale = Math.min(availW / DESIGN_W, availH / designH);
+
+    stage.style.transform = 'scale(' + scale + ')';
+    // Centrar horizontalmente el overlay escalado
+    stage.style.left = Math.max(0, (availW - DESIGN_W * scale) / 2) + 'px';
+    // Reservar exactamente el alto que ocupa (evita scroll fantasma)
+    wrap.style.height = (designH * scale) + 'px';
+  }
+
+  var raf = null;
+  function requestFit(){
+    if(raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(fit);
+  }
+
+  window.addEventListener('resize', requestFit);
+  window.addEventListener('load', fit);
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(fit).catch(function(){});
+  }
+  fit();
+})();
+</script>
 
 </body>
 </html>
