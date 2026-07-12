@@ -125,6 +125,14 @@ export const TOOLTIPS = {
     es: (d) => `Medidor gráfico del uso de RAM: ${d.ram.used} de ${d.ram.total} GB ≈ ${d.derived.ramUsagePercent}% ocupado.`,
     en: (d) => `Graphical gauge of RAM usage: ${d.ram.used} of ${d.ram.total} GB ≈ ${d.derived.ramUsagePercent}% in use.`
   },
+  ramSlot1: {
+    es: () => 'Módulo de RAM n.º 1 (stick #1): el más alejado del cooler del CPU.',
+    en: () => 'RAM module #1 (stick #1): the one farther from the CPU cooler.'
+  },
+  ramSlot2: {
+    es: () => 'Módulo de RAM n.º 2 (stick #2): el más cercano al cooler del CPU, por eso suele reportar una temperatura un poco más alta.',
+    en: () => 'RAM module #2 (stick #2): the one closest to the CPU cooler, which is why it usually reads a bit warmer.'
+  },
   ram1Temp: {
     es: (d) => `Temperatura actual del módulo de RAM n.º 1: ${d.ram.stick1.temp} °C. Las DDR5 traen sensor propio.`,
     en: (d) => `Current temperature of RAM stick #1: ${d.ram.stick1.temp} °C. DDR5 has a built-in sensor.`
@@ -134,8 +142,8 @@ export const TOOLTIPS = {
     en: (d) => `Maximum temperature of stick 1 this session: ${d.ram.stick1.tempMax} °C.`
   },
   ram2Temp: {
-    es: (d) => `Temperatura actual del módulo de RAM n.º 2: ${d.ram.stick2.temp} °C. Suele estar un poco más caliente por su posición en el flujo de aire.`,
-    en: (d) => `Current temperature of RAM stick #2: ${d.ram.stick2.temp} °C. It often runs a bit warmer due to its position in the airflow.`
+    es: (d) => `Temperatura actual del módulo de RAM n.º 2: ${d.ram.stick2.temp} °C. Suele estar un poco más caliente por estar más cerca del cooler del CPU.`,
+    en: (d) => `Current temperature of RAM stick #2: ${d.ram.stick2.temp} °C. It often runs a bit warmer because it sits closer to the CPU cooler.`
   },
   ram2Max: {
     es: (d) => `Máxima temperatura del módulo 2 en la sesión: ${d.ram.stick2.tempMax} °C.`,
@@ -159,8 +167,8 @@ export const TOOLTIPS = {
     en: () => 'Power supply (PSU). Reporting data means it\'s a digital PSU with monitoring.'
   },
   psuTemp: {
-    es: (d) => `Temperatura interna actual de la fuente: ${d.psu.temp} °C.`,
-    en: (d) => `Current internal PSU temperature: ${d.psu.temp} °C.`
+    es: (d) => `Temperatura actual de la fuente: ${d.psu.temp} °C. Tomada desde un sensor probe puesto con cinta termica sobre la parte de atrás de la PSU`,
+    en: (d) => `Current  PSU temperature: ${d.psu.temp} °C. From a probe sensor taped over the back of the PSU.`
   },
   psuTempMax: {
     es: (d) => `Temperatura máxima de la fuente en la sesión: ${d.psu.tempMax} °C.`,

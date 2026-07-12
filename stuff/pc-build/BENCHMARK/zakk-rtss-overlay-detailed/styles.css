@@ -12,6 +12,8 @@
     --gauge-track:#123f4e;
     --tip-bg:#16161f;
     --tip-border:#39c2f5;
+    --temp-limit:#0080C0;  /* color del límite térmico de la GPU */
+    --tip-k:1;             /* factor de escala del tooltip; JS lo ajusta al tamaño de pantalla */
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{height:100%}
@@ -48,6 +50,16 @@
   .lang button.active{background:var(--cyan);border-color:var(--cyan);color:#04141c}
   .lang button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 
+  /* Botón de simulación (verde para diferenciarlo del selector de idioma) */
+  .simbtn{
+    font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;
+    background:#101018;color:#c8c8d2;border:1px solid #2c2c38;border-radius:5px;
+    padding:6px 14px;cursor:pointer;transition:all .15s ease;
+  }
+  .simbtn:hover{border-color:var(--lime);color:#fff}
+  .simbtn.active{background:var(--lime);border-color:var(--lime);color:#0b1404}
+  .simbtn:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+
   .legend{
     width:100%;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px 22px;
     font-size:12px;font-family:'IBM Plex Sans',sans-serif;color:#c8c8d2;
@@ -65,7 +77,7 @@
   #stage{
     position:absolute;top:0;left:0;
     width:1200px;
-    font-size:20px;             /* tamaño base del diseño: todo deriva de acá */
+    font-size:22px;             /* tamaño base del diseño: todo deriva de acá (texto e íconos, que usan em) */
     transform-origin:top left;
     display:grid;gap:4px;
     grid-template-columns:360px 380px 460px;
@@ -92,6 +104,8 @@
   .lbl-max{color:var(--yellow);font-weight:600}
   .disk{color:var(--green);font-size:1.05em;font-weight:700;letter-spacing:.04em}
   .cores{font-size:0.85em}
+  /* Ítems un poco más chicos (p. ej. la fila del chipset). */
+  .sm{font-size:0.8em}
   .spacer{flex:1}
 
   /* SSDs lado a lado */
@@ -102,7 +116,7 @@
   .g-ico{width:1.15em;height:1.15em;display:inline-block;vertical-align:-0.2em;flex:none}
   .wr{display:inline-flex;flex-direction:column;align-items:center;line-height:1}
   .wr small{font-size:0.5em;font-weight:600;color:#fff;margin-top:2px}
-  .bolt{width:0.9em;height:0.9em;display:inline-block;vertical-align:-0.1em;flex:none}
+  .bolt{width:1.1em;height:1.1em;display:inline-block;vertical-align:-0.2em;flex:none}
 
   /* ---------- Sensores con tooltip ---------- */
   .s{
@@ -116,40 +130,24 @@
   .w{color:var(--white)} .g{color:var(--lime)} .o{color:var(--orange)}
   .s:hover,.s:focus-visible{filter:brightness(1.25);border-bottom-color:#fff}
 
-  .s::after{
-    content:attr(data-tip);
-    position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(4px);
-    width:max-content;max-width:300px;
-    background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:6px;
-    padding:9px 12px;
-    font-family:'IBM Plex Sans',sans-serif;font-size:0.68em;font-weight:400;line-height:1.45;
+  /* El tooltip real es un único elemento fijo (#tip) posicionado por JS
+     y recortado al viewport (ver bloque 6b del script). Vive fuera del
+     #stage escalado, así que siempre queda por encima de todo y nunca
+     se sale de la pantalla. Las clases .tl/.tr ya no cambian nada visual. */
+  #tip{
+    position:fixed;top:0;left:0;z-index:9999;pointer-events:none;
+    max-width:calc(300px * var(--tip-k));
+    background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:calc(6px * var(--tip-k));
+    padding:calc(9px * var(--tip-k)) calc(12px * var(--tip-k));
+    font-family:'IBM Plex Sans',sans-serif;font-size:calc(17px * var(--tip-k));font-weight:400;line-height:1.45;
     color:#e8e8ee;text-transform:none;letter-spacing:0;
-    opacity:0;visibility:hidden;pointer-events:none;
-    transition:opacity .15s ease,transform .15s ease;
-    z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.6);
+    box-shadow:0 8px 24px rgba(0,0,0,.6);
+    opacity:0;visibility:hidden;transition:opacity .12s ease;
   }
-  .s::before{
-    content:"";position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);
-    border:6px solid transparent;border-top-color:var(--tip-border);
-    opacity:0;visibility:hidden;transition:opacity .15s ease;z-index:20;
-  }
-  .s:hover::after,.s:focus-visible::after{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
-  .s:hover::before,.s:focus-visible::before{opacity:1;visibility:visible}
-  /* variantes para bordes del escenario */
-  .tl::after{left:0;transform:translateX(0) translateY(4px)}
-  .tl:hover::after,.tl:focus-visible::after{transform:translateX(0) translateY(0)}
-  .tl::before{left:14px}
-  .tr::after{left:auto;right:0;transform:translateX(0) translateY(4px)}
-  .tr:hover::after,.tr:focus-visible::after{transform:translateX(0) translateY(0)}
-  .tr::before{left:auto;right:14px;transform:none}
-  /* la fila de núcleos usa tooltips debajo para no tapar el título */
-  .cores .s::after{bottom:auto;top:calc(100% + 10px);transform:translateX(-50%) translateY(-4px)}
-  .cores .s::before{bottom:auto;top:calc(100% + 4px);border-top-color:transparent;border-bottom-color:var(--tip-border)}
-  .cores .s:hover::after,.cores .s:focus-visible::after{transform:translateX(-50%) translateY(0)}
-  .cores .s.tl::after{left:0;transform:translateX(0) translateY(-4px)}
-  .cores .s.tl:hover::after,.cores .s.tl:focus-visible::after{transform:translateX(0) translateY(0)}
-  .cores .s.tr::after{left:auto;right:0;transform:translateX(0) translateY(-4px)}
-  .cores .s.tr:hover::after,.cores .s.tr:focus-visible::after{transform:translateX(0) translateY(0)}
+  #tip.show{opacity:1;visibility:visible}
+  #tip .caret{position:absolute;width:0;height:0;border:calc(6px * var(--tip-k)) solid transparent}
+  #tip.above .caret{bottom:calc(-12px * var(--tip-k));border-top-color:var(--tip-border)}
+  #tip.below .caret{top:calc(-12px * var(--tip-k));border-bottom-color:var(--tip-border)}
 
   .fps .big{font-size:2.4em;letter-spacing:.03em;margin:2px 0}
   .hz{font-size:1.05em;margin-top:auto;padding-top:1.6em}
@@ -157,7 +155,7 @@
 
   /* ---------- Mini gráfico de historial (línea +12V) ---------- */
   .volt-graph{
-    flex:1;min-width:40px;height:16px;position:relative;
+    flex:0 0 auto;width:44px;height:16px;position:relative;
     display:flex;align-items:center;margin:0 6px;cursor:help;
   }
   .volt-graph::before{
@@ -167,19 +165,6 @@
   .volt-graph .tick{
     position:absolute;left:52%;top:0;bottom:0;width:1px;background:var(--cyan);opacity:.8;
   }
-  .volt-graph::after{
-    content:attr(data-tip);
-    position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(4px);
-    width:max-content;max-width:280px;
-    background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:6px;
-    padding:9px 12px;
-    font-family:'IBM Plex Sans',sans-serif;font-size:0.68em;font-weight:400;line-height:1.45;
-    color:#e8e8ee;text-transform:none;letter-spacing:0;
-    opacity:0;visibility:hidden;pointer-events:none;
-    transition:opacity .15s ease,transform .15s ease;
-    z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.6);
-  }
-  .volt-graph:hover::after,.volt-graph:focus-visible::after{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
 
   /* ---------- Modo apilado: solo cuando la pantalla no puede
      contener el layout (muy angosta). Los bloques pasan a una
@@ -188,16 +173,15 @@
     position:static;
     width:100%;
     transform:none !important;
-    font-size:17px;
+    font-size:18px;
     grid-template-columns:1fr;
     grid-template-rows:none;
     grid-template-areas:"gpu" "cpu" "ram" "store" "fps";
   }
-  #stage.stack .s::after{max-width:min(300px,80vw)}
   #stage.stack .ssds{flex-direction:column;gap:8px}
   #stage.stack .hz{padding-top:0.4em}
   #stage.stack .volt-graph{min-width:24px}
 
   @media (prefers-reduced-motion:reduce){
-    .s::after,.s::before,.lang button{transition:none}
+    #tip,.lang button{transition:none}
   }

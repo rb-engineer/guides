@@ -14,6 +14,7 @@
 <header>
   <h1 id="appTitle">ZAKK: Overlay RTSS DETAILED</h1>
   <p id="intro" data-i18n="intro">Hover (or Tab through) any value to see what that sensor measures.</p>
+  <button id="btn-sim" class="simbtn" type="button" aria-pressed="false" onclick="toggleSim()">▶ Simulate</button>
   <div class="lang" role="group" aria-label="Tooltip language">
     <span id="langLabel" data-i18n="langLabel">Tooltip language:</span>
     <button id="btn-es" type="button" onclick="setLang('es')">ES</button>
@@ -40,7 +41,7 @@
       <span class="s y" data-bind="gpu.tempMax" data-fmt="int" data-unit="°C" data-tip-key="gpuTempMax">38<sup>°C</sup></span>
       <span class="s c" data-bind="gpu.hotspot" data-fmt="int" data-unit="°C" data-tip-key="gpuHotspot">42<sup>°C</sup></span>
       <span class="s c" data-bind="gpu.vramTemp" data-fmt="int" data-unit="°C" data-tip-key="gpuVramTemp">43<sup>°C</sup></span>
-      <span class="s c" data-bind="gpu.tempLimit" data-fmt="int" data-unit="°C" data-tip-key="gpuTempLimit">84<sup>°C</sup></span>
+      <span class="s" style="color:var(--temp-limit)" data-bind="gpu.tempLimit" data-fmt="int" data-unit="°C" data-tip-key="gpuTempLimit">84<sup>°C</sup></span>
     </div>
     <div class="row">
       <span class="lbl">Core:</span>
@@ -99,9 +100,9 @@
       <span class="s tr w" data-bind="cpu.cores.7" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore8">202<sup>MHz</sup></span>
     </div>
     <div class="row">
-      <span class="s tl o" data-tip-key="chipsetLabel">CHIPSET</span>
-      <span class="s c" data-bind="cpu.chipsetTemp" data-fmt="int" data-unit="°C" data-tip-key="chipsetTemp">56<sup>°C</sup></span>
-      <span class="s y" data-bind="cpu.chipsetTempMax" data-fmt="int" data-unit="°C" data-tip-key="chipsetTempMax">57<sup>°C</sup></span>
+      <span class="s sm tl o" data-tip-key="chipsetLabel">CHIPSET</span>
+      <span class="s sm c" data-bind="cpu.chipsetTemp" data-fmt="int" data-unit="°C" data-tip-key="chipsetTemp">56<sup>°C</sup></span>
+      <span class="s sm y" data-bind="cpu.chipsetTempMax" data-fmt="int" data-unit="°C" data-tip-key="chipsetTempMax">57<sup>°C</sup></span>
     </div>
   </section>
 
@@ -111,12 +112,12 @@
       <span class="s nb" data-gauge="derived.ramUsagePercent" data-gauge-color="var(--gauge-color)" data-tip-key="ramGauge"></span>
     </h2>
     <div class="row">
-      <span class="lbl">#1</span>
+      <span class="s tl w" data-tip-key="ramSlot1">#1</span>
       <span class="s c" data-bind="ram.stick1.temp" data-fmt="int" data-unit="°C" data-tip-key="ram1Temp">43<sup>°C</sup></span>
       <span class="s y" data-bind="ram.stick1.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ram1Max">43<sup>°C</sup></span>
     </div>
     <div class="row">
-      <span class="lbl">#2</span>
+      <span class="s tl w" data-tip-key="ramSlot2">#2</span>
       <span class="s c" data-bind="ram.stick2.temp" data-fmt="int" data-unit="°C" data-tip-key="ram2Temp">45<sup>°C</sup></span>
       <span class="s y" data-bind="ram.stick2.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ram2Max">45<sup>°C</sup></span>
     </div>
@@ -199,7 +200,7 @@
 </div><!-- /#stage -->
 </div><!-- /#stageWrap -->
 
-<script type="module" src="js/main.js"></script>
+<script type="module" src="main.js"></script>
 
 </body>
 </html>
