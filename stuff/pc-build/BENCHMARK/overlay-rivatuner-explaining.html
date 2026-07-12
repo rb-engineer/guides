@@ -315,12 +315,12 @@
       <span class="s nb" data-gauge="derived.ramUsagePercent" data-gauge-color="var(--gauge-color)" data-tip-key="ramGauge"></span>
     </h2>
     <div class="row">
-      <span class="lbl">#1</span>
+      <span class="s tl w" data-tip-key="ramSlot1">#1</span>
       <span class="s c" data-bind="ram.stick1.temp" data-fmt="int" data-unit="°C" data-tip-key="ram1Temp">43<sup>°C</sup></span>
       <span class="s y" data-bind="ram.stick1.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ram1Max">43<sup>°C</sup></span>
     </div>
     <div class="row">
-      <span class="lbl">#2</span>
+      <span class="s tl w" data-tip-key="ramSlot2">#2</span>
       <span class="s c" data-bind="ram.stick2.temp" data-fmt="int" data-unit="°C" data-tip-key="ram2Temp">45<sup>°C</sup></span>
       <span class="s y" data-bind="ram.stick2.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ram2Max">45<sup>°C</sup></span>
     </div>
@@ -456,10 +456,10 @@
     // (típico de RTSS); se guardan como texto para reproducirlo tal cual.
     rail3v: { current: '3.31', min: '3.296', max: '3.31' },
     perf: {
-      api: 'OGL',
-      frametime: 999.6,
-      fps: 1,
-      refreshHz: 140,
+      api: 'D3D12',
+      frametime: 5.6,
+      fps: 300,
+      refreshHz: 159,
       clock: '05:09:13 PM'
     }
   };
@@ -625,6 +625,14 @@
       es: (d) => `Medidor gráfico del uso de RAM: ${d.ram.used} de ${d.ram.total} GB ≈ ${d.derived.ramUsagePercent}% ocupado.`,
       en: (d) => `Graphical gauge of RAM usage: ${d.ram.used} of ${d.ram.total} GB ≈ ${d.derived.ramUsagePercent}% in use.`
     },
+    ramSlot1: {
+      es: () => 'Módulo de RAM n.º 1 (stick #1): el más alejado del cooler del CPU.',
+      en: () => 'RAM module #1 (stick #1): the one farther from the CPU cooler.'
+    },
+    ramSlot2: {
+      es: () => 'Módulo de RAM n.º 2 (stick #2): el más cercano al cooler del CPU, por eso suele reportar una temperatura un poco más alta.',
+      en: () => 'RAM module #2 (stick #2): the one closest to the CPU cooler, which is why it usually reads a bit warmer.'
+    },
     ram1Temp: {
       es: (d) => `Temperatura actual del módulo de RAM n.º 1: ${d.ram.stick1.temp} °C. Las DDR5 traen sensor propio.`,
       en: (d) => `Current temperature of RAM stick #1: ${d.ram.stick1.temp} °C. DDR5 has a built-in sensor.`
@@ -634,8 +642,8 @@
       en: (d) => `Maximum temperature of stick 1 this session: ${d.ram.stick1.tempMax} °C.`
     },
     ram2Temp: {
-      es: (d) => `Temperatura actual del módulo de RAM n.º 2: ${d.ram.stick2.temp} °C. Suele estar un poco más caliente por su posición en el flujo de aire.`,
-      en: (d) => `Current temperature of RAM stick #2: ${d.ram.stick2.temp} °C. It often runs a bit warmer due to its position in the airflow.`
+      es: (d) => `Temperatura actual del módulo de RAM n.º 2: ${d.ram.stick2.temp} °C. Suele estar un poco más caliente por estar más cerca del cooler del CPU.`,
+      en: (d) => `Current temperature of RAM stick #2: ${d.ram.stick2.temp} °C. It often runs a bit warmer because it sits closer to the CPU cooler.`
     },
     ram2Max: {
       es: (d) => `Máxima temperatura del módulo 2 en la sesión: ${d.ram.stick2.tempMax} °C.`,
