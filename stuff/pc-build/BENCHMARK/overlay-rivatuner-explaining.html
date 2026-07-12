@@ -1,1013 +1,1490 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZAKK: Overlay RTSS DETAILED</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#0a0a0f;
-    --cyan:#39c2f5;      /* valor actual */
-    --yellow:#f5e13a;    /* máximo de sesión */
-    --pink:#f0a0c8;      /* lectura mínima */
-    --orange:#f5821f;    /* títulos de panel */
-    --green:#08CD08;     /* nombres de discos SSD */
-    --lime:#AEEA00;      /* API gráfica */
-    --gauge-color:#00F0FF; /* color de todos los gauges (arco + aguja) */
-    --white:#f2f2f2;
-    --label:#e8e8e8;
-    --gauge-track:#123f4e;
-    --tip-bg:#16161f;
-    --tip-border:#39c2f5;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{height:100%}
-  body{
-    min-height:100%;
-    background:var(--bg);
-    color:var(--white);
-    font-family:'Chakra Petch',system-ui,sans-serif;
-    display:flex;flex-direction:column;
-    padding:12px 16px;
-    overflow-x:hidden;
-    background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
-    background-size:28px 28px;
-  }
 
-  /* ---------- Barra superior (fuera del overlay, no escala) ---------- */
-  header{
-    display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;
-    width:100%;margin-bottom:10px;
-  }
-  header h1{font-size:20px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
-  header h1 span{color:var(--orange)}
-  header p{font-family:'IBM Plex Sans',sans-serif;color:#b8b8c4;font-size:13px;flex:1 1 240px;min-width:200px}
-  .lang{
-    margin-left:auto;display:flex;align-items:center;gap:8px;
-    font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#9a9aa8;
-  }
-  .lang button{
-    font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;
-    background:#101018;color:#c8c8d2;border:1px solid #2c2c38;border-radius:5px;
-    padding:6px 14px;cursor:pointer;transition:all .15s ease;
-  }
-  .lang button:hover{border-color:var(--cyan);color:#fff}
-  .lang button.active{background:var(--cyan);border-color:var(--cyan);color:#04141c}
-  .lang button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZAKK: Overlay RTSS DETAILED</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&display=swap"
+      rel="stylesheet">
+    <style>
+      :root {
+        --bg: #0a0a0f;
+        --cyan: #39c2f5;
+        /* valor actual */
+        --yellow: #f5e13a;
+        /* máximo de sesión */
+        --pink: #f0a0c8;
+        /* lectura mínima */
+        --orange: #f5821f;
+        /* títulos de panel */
+        --green: #08CD08;
+        /* nombres de discos SSD */
+        --lime: #AEEA00;
+        /* API gráfica */
+        --gauge-color: #00F0FF;
+        /* color de todos los gauges (arco + aguja) */
+        --white: #f2f2f2;
+        --label: #e8e8e8;
+        --gauge-track: #123f4e;
+        --tip-bg: #16161f;
+        --tip-border: #39c2f5;
+        --temp-limit: #0080C0;
+        /* color del límite térmico de la GPU */
+        --tip-k: 1;
+        /* factor de escala del tooltip; JS lo ajusta al tamaño de pantalla */
+      }
 
-  .legend{
-    width:100%;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px 22px;
-    font-size:12px;font-family:'IBM Plex Sans',sans-serif;color:#c8c8d2;
-    border:1px solid #26262f;padding:7px 12px;border-radius:6px;background:#101018;
-  }
-  .legend b{font-family:'Chakra Petch',sans-serif}
-  .legend .sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0
+      }
 
-  /* ---------- Escenario del overlay ----------
+      html {
+        height: 100%
+      }
+
+      body {
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--white);
+        font-family: 'Chakra Petch', system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        padding: 12px 16px;
+        overflow-x: hidden;
+        background-image: linear-gradient(rgba(255, 255, 255, .025) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px);
+        background-size: 28px 28px;
+      }
+
+      /* ---------- Barra superior (fuera del overlay, no escala) ---------- */
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 16px;
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      header h1 {
+        font-size: 20px;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        white-space: nowrap
+      }
+
+      header h1 span {
+        color: var(--orange)
+      }
+
+      header p {
+        font-family: 'IBM Plex Sans', sans-serif;
+        color: #b8b8c4;
+        font-size: 13px;
+        flex: 1 1 240px;
+        min-width: 200px
+      }
+
+      .lang {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-size: 12px;
+        color: #9a9aa8;
+      }
+
+      .lang button {
+        font-family: 'Chakra Petch', sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: .06em;
+        background: #101018;
+        color: #c8c8d2;
+        border: 1px solid #2c2c38;
+        border-radius: 5px;
+        padding: 6px 14px;
+        cursor: pointer;
+        transition: all .15s ease;
+      }
+
+      .lang button:hover {
+        border-color: var(--cyan);
+        color: #fff
+      }
+
+      .lang button.active {
+        background: var(--cyan);
+        border-color: var(--cyan);
+        color: #04141c
+      }
+
+      .lang button:focus-visible {
+        outline: 2px solid var(--cyan);
+        outline-offset: 2px
+      }
+
+      .legend {
+        width: 100%;
+        margin-bottom: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 22px;
+        font-size: 12px;
+        font-family: 'IBM Plex Sans', sans-serif;
+        color: #c8c8d2;
+        border: 1px solid #26262f;
+        padding: 7px 12px;
+        border-radius: 6px;
+        background: #101018;
+      }
+
+      .legend b {
+        font-family: 'Chakra Petch', sans-serif
+      }
+
+      .legend .sw {
+        display: inline-block;
+        width: 11px;
+        height: 11px;
+        border-radius: 2px;
+        margin-right: 6px;
+        vertical-align: -1px
+      }
+
+      /* ---------- Escenario del overlay ----------
      El overlay se diseña a un tamaño FIJO de 1200px de ancho, con
      posiciones y tipografía estáticas (como el overlay real).
      JS lo escala como un todo (transform: scale) para que entre en
      la pantalla, sin mover ningún bloque de lugar. */
-  #stageWrap{position:relative;flex:1;width:100%}
-  #stage{
-    position:absolute;top:0;left:0;
-    width:1200px;
-    font-size:20px;             /* tamaño base del diseño: todo deriva de acá */
-    transform-origin:top left;
-    display:grid;gap:4px;
-    grid-template-columns:360px 380px 460px;
-    grid-template-rows:auto auto 1fr;
-    grid-template-areas:
-      "gpu gpu cpu"
-      "ram store store"
-      "fps store store";
-  }
+      #stageWrap {
+        position: relative;
+        flex: 1;
+        width: 100%
+      }
 
-  .panel{padding:14px 18px;border-radius:4px;min-width:0}
-  .panel h2{
-    color:var(--orange);font-size:1.3em;letter-spacing:.05em;margin-bottom:8px;
-    display:flex;align-items:center;gap:12px;
-  }
-  .gpu{grid-area:gpu;background:#3a2e05}
-  .cpu{grid-area:cpu;background:#0b2838}
-  .ram{grid-area:ram;background:#1e0f33}
-  .store{grid-area:store;background:#1e0e03}
-  .fps{grid-area:fps;background:#0d0d0d;display:flex;flex-direction:column}
+      #stage {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1200px;
+        font-size: 24px;
+        /* tamaño base del diseño: todo deriva de acá (texto e íconos, que usan em) */
+        transform-origin: top left;
+        display: grid;
+        gap: 4px;
+        grid-template-columns: 360px 380px 460px;
+        grid-template-rows: auto auto 1fr;
+        grid-template-areas:
+          "gpu gpu cpu"
+          "ram store store"
+          "fps store store";
+      }
 
-  .row{display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px;margin:8px 0;font-size:1.05em}
-  .lbl{color:var(--label);font-weight:600}
-  .lbl-max{color:var(--yellow);font-weight:600}
-  .disk{color:var(--green);font-size:1.05em;font-weight:700;letter-spacing:.04em}
-  .cores{font-size:0.85em}
-  .spacer{flex:1}
+      .panel {
+        padding: 14px 18px;
+        border-radius: 4px;
+        min-width: 0
+      }
 
-  /* SSDs lado a lado */
-  .ssds{display:flex;gap:14px;align-items:flex-start;margin:8px 0}
-  .ssd{flex:0 0 auto;min-width:0}
+      .panel h2 {
+        color: var(--orange);
+        font-size: 1.3em;
+        letter-spacing: .05em;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
 
-  /* ---------- Iconos de gauge (medidores) y bolt ---------- */
-  .g-ico{width:1.15em;height:1.15em;display:inline-block;vertical-align:-0.2em;flex:none}
-  .wr{display:inline-flex;flex-direction:column;align-items:center;line-height:1}
-  .wr small{font-size:0.5em;font-weight:600;color:#fff;margin-top:2px}
-  .bolt{width:0.9em;height:0.9em;display:inline-block;vertical-align:-0.1em;flex:none}
+      .gpu {
+        grid-area: gpu;
+        background: #3a2e05
+      }
 
-  /* ---------- Sensores con tooltip ---------- */
-  .s{
-    position:relative;cursor:help;font-weight:700;
-    border-bottom:1px dotted rgba(255,255,255,.45);
-    outline:none;
-  }
-  .s.nb{border-bottom:none}
-  .s sup{font-size:.55em;font-weight:600;margin-left:1px}
-  .c{color:var(--cyan)} .y{color:var(--yellow)} .p{color:var(--pink)}
-  .w{color:var(--white)} .g{color:var(--lime)} .o{color:var(--orange)}
-  .s:hover,.s:focus-visible{filter:brightness(1.25);border-bottom-color:#fff}
+      .cpu {
+        grid-area: cpu;
+        background: #0b2838
+      }
 
-  .s::after{
-    content:attr(data-tip);
-    position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(4px);
-    width:max-content;max-width:300px;
-    background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:6px;
-    padding:9px 12px;
-    font-family:'IBM Plex Sans',sans-serif;font-size:0.68em;font-weight:400;line-height:1.45;
-    color:#e8e8ee;text-transform:none;letter-spacing:0;
-    opacity:0;visibility:hidden;pointer-events:none;
-    transition:opacity .15s ease,transform .15s ease;
-    z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.6);
-  }
-  .s::before{
-    content:"";position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);
-    border:6px solid transparent;border-top-color:var(--tip-border);
-    opacity:0;visibility:hidden;transition:opacity .15s ease;z-index:20;
-  }
-  .s:hover::after,.s:focus-visible::after{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
-  .s:hover::before,.s:focus-visible::before{opacity:1;visibility:visible}
-  /* variantes para bordes del escenario */
-  .tl::after{left:0;transform:translateX(0) translateY(4px)}
-  .tl:hover::after,.tl:focus-visible::after{transform:translateX(0) translateY(0)}
-  .tl::before{left:14px}
-  .tr::after{left:auto;right:0;transform:translateX(0) translateY(4px)}
-  .tr:hover::after,.tr:focus-visible::after{transform:translateX(0) translateY(0)}
-  .tr::before{left:auto;right:14px;transform:none}
-  /* la fila de núcleos usa tooltips debajo para no tapar el título */
-  .cores .s::after{bottom:auto;top:calc(100% + 10px);transform:translateX(-50%) translateY(-4px)}
-  .cores .s::before{bottom:auto;top:calc(100% + 4px);border-top-color:transparent;border-bottom-color:var(--tip-border)}
-  .cores .s:hover::after,.cores .s:focus-visible::after{transform:translateX(-50%) translateY(0)}
-  .cores .s.tl::after{left:0;transform:translateX(0) translateY(-4px)}
-  .cores .s.tl:hover::after,.cores .s.tl:focus-visible::after{transform:translateX(0) translateY(0)}
-  .cores .s.tr::after{left:auto;right:0;transform:translateX(0) translateY(-4px)}
-  .cores .s.tr:hover::after,.cores .s.tr:focus-visible::after{transform:translateX(0) translateY(0)}
+      .ram {
+        grid-area: ram;
+        background: #1e0f33
+      }
 
-  .fps .big{font-size:2.4em;letter-spacing:.03em;margin:2px 0}
-  .hz{font-size:1.05em;margin-top:auto;padding-top:1.6em}
-  .clock{color:var(--cyan);font-size:1.35em;font-weight:700;margin-top:6px}
+      .store {
+        grid-area: store;
+        background: #1e0e03
+      }
 
-  /* ---------- Mini gráfico de historial (línea +12V) ---------- */
-  .volt-graph{
-    flex:0 0 auto;width:44px;height:16px;position:relative;
-    display:flex;align-items:center;margin:0 6px;cursor:help;
-  }
-  .volt-graph::before{
-    content:"";position:absolute;left:0;right:0;top:50%;height:2px;
-    background:var(--cyan);opacity:.55;transform:translateY(-50%);
-  }
-  .volt-graph .tick{
-    position:absolute;left:52%;top:0;bottom:0;width:1px;background:var(--cyan);opacity:.8;
-  }
-  .volt-graph::after{
-    content:attr(data-tip);
-    position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(4px);
-    width:max-content;max-width:280px;
-    background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:6px;
-    padding:9px 12px;
-    font-family:'IBM Plex Sans',sans-serif;font-size:0.68em;font-weight:400;line-height:1.45;
-    color:#e8e8ee;text-transform:none;letter-spacing:0;
-    opacity:0;visibility:hidden;pointer-events:none;
-    transition:opacity .15s ease,transform .15s ease;
-    z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.6);
-  }
-  .volt-graph:hover::after,.volt-graph:focus-visible::after{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+      .fps {
+        grid-area: fps;
+        background: #0d0d0d;
+        display: flex;
+        flex-direction: column
+      }
 
-  /* ---------- Modo apilado: solo cuando la pantalla no puede
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 5px 10px;
+        margin: 8px 0;
+        font-size: 1.05em
+      }
+
+      .lbl {
+        color: var(--label);
+        font-weight: 600
+      }
+
+      .lbl-max {
+        color: var(--yellow);
+        font-weight: 600
+      }
+
+      .disk {
+        color: var(--green);
+        font-size: 1.05em;
+        font-weight: 700;
+        letter-spacing: .04em
+      }
+
+      .cores {
+        font-size: 0.85em
+      }
+
+      /* Ítems un poco más chicos (p. ej. la fila del chipset). */
+      .sm {
+        font-size: 0.8em
+      }
+
+      .spacer {
+        flex: 1
+      }
+
+      /* SSDs lado a lado */
+      .ssds {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        margin: 8px 0
+      }
+
+      .ssd {
+        flex: 0 0 auto;
+        min-width: 0
+      }
+
+      /* ---------- Iconos de gauge (medidores) y bolt ---------- */
+      .g-ico {
+        width: 1.15em;
+        height: 1.15em;
+        display: inline-block;
+        vertical-align: -0.2em;
+        flex: none
+      }
+
+      .wr {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        line-height: 1
+      }
+
+      .wr small {
+        font-size: 0.5em;
+        font-weight: 600;
+        color: #fff;
+        margin-top: 2px
+      }
+
+      .bolt {
+        width: 1.5em;
+        height: 1.5em;
+        display: inline-block;
+        vertical-align: -0.3em;
+        flex: none
+      }
+
+      /* ---------- Sensores con tooltip ---------- */
+      .s {
+        position: relative;
+        cursor: help;
+        font-weight: 700;
+        border-bottom: 1px dotted rgba(255, 255, 255, .45);
+        outline: none;
+      }
+
+      .s.nb {
+        border-bottom: none
+      }
+
+      .s sup {
+        font-size: .55em;
+        font-weight: 600;
+        margin-left: 1px
+      }
+
+      .c {
+        color: var(--cyan)
+      }
+
+      .y {
+        color: var(--yellow)
+      }
+
+      .p {
+        color: var(--pink)
+      }
+
+      .w {
+        color: var(--white)
+      }
+
+      .g {
+        color: var(--lime)
+      }
+
+      .o {
+        color: var(--orange)
+      }
+
+      .s:hover,
+      .s:focus-visible {
+        filter: brightness(1.25);
+        border-bottom-color: #fff
+      }
+
+      /* El tooltip real es un único elemento fijo (#tip) posicionado por JS
+     y recortado al viewport (ver bloque 6b del script). Vive fuera del
+     #stage escalado, así que siempre queda por encima de todo y nunca
+     se sale de la pantalla. Las clases .tl/.tr ya no cambian nada visual. */
+      #tip {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+        pointer-events: none;
+        max-width: calc(300px * var(--tip-k));
+        background: var(--tip-bg);
+        border: 1px solid var(--tip-border);
+        border-radius: calc(6px * var(--tip-k));
+        padding: calc(9px * var(--tip-k)) calc(12px * var(--tip-k));
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-size: calc(13px * var(--tip-k));
+        font-weight: 400;
+        line-height: 1.45;
+        color: #e8e8ee;
+        text-transform: none;
+        letter-spacing: 0;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .6);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .12s ease;
+      }
+
+      #tip.show {
+        opacity: 1;
+        visibility: visible
+      }
+
+      #tip .caret {
+        position: absolute;
+        width: 0;
+        height: 0;
+        border: calc(6px * var(--tip-k)) solid transparent
+      }
+
+      #tip.above .caret {
+        bottom: calc(-12px * var(--tip-k));
+        border-top-color: var(--tip-border)
+      }
+
+      #tip.below .caret {
+        top: calc(-12px * var(--tip-k));
+        border-bottom-color: var(--tip-border)
+      }
+
+      .fps .big {
+        font-size: 2.4em;
+        letter-spacing: .03em;
+        margin: 2px 0
+      }
+
+      .hz {
+        font-size: 1.05em;
+        margin-top: auto;
+        padding-top: 1.6em
+      }
+
+      .clock {
+        color: var(--cyan);
+        font-size: 1.35em;
+        font-weight: 700;
+        margin-top: 6px
+      }
+
+      /* ---------- Mini gráfico de historial (línea +12V) ---------- */
+      .volt-graph {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 16px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin: 0 6px;
+        cursor: help;
+      }
+
+      .volt-graph::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 2px;
+        background: var(--cyan);
+        opacity: .55;
+        transform: translateY(-50%);
+      }
+
+      .volt-graph .tick {
+        position: absolute;
+        left: 52%;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: var(--cyan);
+        opacity: .8;
+      }
+
+      /* ---------- Modo apilado: solo cuando la pantalla no puede
      contener el layout (muy angosta). Los bloques pasan a una
      columna; es el único caso en que se mueven de lugar. ---------- */
-  #stage.stack{
-    position:static;
-    width:100%;
-    transform:none !important;
-    font-size:17px;
-    grid-template-columns:1fr;
-    grid-template-rows:none;
-    grid-template-areas:"gpu" "cpu" "ram" "store" "fps";
-  }
-  #stage.stack .s::after{max-width:min(300px,80vw)}
-  #stage.stack .ssds{flex-direction:column;gap:8px}
-  #stage.stack .hz{padding-top:0.4em}
-  #stage.stack .volt-graph{min-width:24px}
-
-  @media (prefers-reduced-motion:reduce){
-    .s::after,.s::before,.lang button{transition:none}
-  }
-</style>
-</head>
-<body>
-
-<header>
-  <h1 id="appTitle">ZAKK: Overlay RTSS DETAILED</h1>
-  <p id="intro" data-i18n="intro">Hover (or Tab through) any value to see what that sensor measures.</p>
-  <div class="lang" role="group" aria-label="Tooltip language">
-    <span id="langLabel" data-i18n="langLabel">Tooltip language:</span>
-    <button id="btn-es" type="button" onclick="setLang('es')">ES</button>
-    <button id="btn-en" class="active" type="button" onclick="setLang('en')">EN</button>
-  </div>
-</header>
-
-<div class="legend">
-  <span><span class="sw" style="background:var(--cyan)"></span><b style="color:var(--cyan)" data-i18n="legendCyanName">Cyan</b> <span data-i18n="legendCyanDesc">= current value</span></span>
-  <span><span class="sw" style="background:var(--yellow)"></span><b style="color:var(--yellow)" data-i18n="legendYellowName">Yellow</b> <span data-i18n="legendYellowDesc">= session maximum</span></span>
-  <span><span class="sw" style="background:var(--pink)"></span><b style="color:var(--pink)" data-i18n="legendPinkName">Pink</b> <span data-i18n="legendPinkDesc">= session minimum</span></span>
-  <span><span class="sw" style="background:var(--orange)"></span><b style="color:var(--orange)" data-i18n="legendOrangeName">Orange</b> <span data-i18n="legendOrangeDesc">= component name</span></span>
-</div>
-
-<div id="stageWrap">
-<div id="stage">
-
-  <!-- ===================== GPU ===================== -->
-  <section class="panel gpu">
-    <h2><span class="s tl w" style="color:var(--orange)" data-bind="gpu.label" data-tip-key="gpuName">RTX 4080 SUPER</span></h2>
-    <div class="row">
-      <span class="s tl c" data-bind="gpu.temp" data-fmt="int" data-unit="°C" data-tip-key="gpuTemp">34<sup>°C</sup></span>
-      <span class="lbl-max">Max:</span>
-      <span class="s y" data-bind="gpu.tempMax" data-fmt="int" data-unit="°C" data-tip-key="gpuTempMax">38<sup>°C</sup></span>
-      <span class="s c" data-bind="gpu.hotspot" data-fmt="int" data-unit="°C" data-tip-key="gpuHotspot">42<sup>°C</sup></span>
-      <span class="s c" data-bind="gpu.vramTemp" data-fmt="int" data-unit="°C" data-tip-key="gpuVramTemp">43<sup>°C</sup></span>
-      <span class="s c" data-bind="gpu.tempLimit" data-fmt="int" data-unit="°C" data-tip-key="gpuTempLimit">84<sup>°C</sup></span>
-    </div>
-    <div class="row">
-      <span class="lbl">Core:</span>
-      <span class="s nb" data-gauge="derived.gpuCoreClockPercent" data-gauge-color="var(--gauge-color)" data-tip-key="gpuCoreGauge"></span>
-      <span class="s c" data-bind="gpu.coreClock" data-fmt="int" data-unit="MHz" data-tip-key="gpuCoreClock">915<sup>MHz</sup></span>
-      <span class="s y" data-bind="gpu.coreClockMax" data-fmt="int" data-unit="MHz" data-tip-key="gpuCoreClockMax">2610<sup>MHz</sup></span>
-    </div>
-    <div class="row">
-      <span class="s nb tl" data-tip-key="gpuPowerIcon">
-        <svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L5 14 h6 l-2 8 8-12 h-6 z" fill="#fff"/></svg>
-      </span>
-      <span class="s c" data-bind="gpu.power" data-fmt="int" data-unit="W" data-tip-key="gpuPower">50<sup>W</sup></span>
-      <span class="s y" data-bind="gpu.powerMax" data-fmt="int" data-unit="W" data-tip-key="gpuPowerMax">139<sup>W</sup></span>
-      <span class="lbl">Power Usage:</span>
-      <span class="s c" data-bind="gpu.powerUsagePercent" data-fmt="int" data-unit="%" data-tip-key="gpuPowerUsage">21<sup>%</sup></span>
-    </div>
-    <div class="row">
-      <span class="lbl">Core Voltage:</span>
-      <span class="s c" data-bind="gpu.voltage" data-fmt="3dec" data-unit="V" data-tip-key="gpuVoltage">0.960<sup>V</sup></span>
-      <span class="s y" data-bind="gpu.voltageMax" data-fmt="3dec" data-unit="V" data-tip-key="gpuVoltageMax">0.960<sup>V</sup></span>
-    </div>
-    <div class="row">
-      <span class="lbl">VRAM Usage:</span>
-      <span class="s c" data-bind="gpu.vramUsed" data-fmt="2dec" data-unit="GB" data-tip-key="gpuVramUsed">4.77<sup>GB</sup></span>
-      <span class="lbl">/</span>
-      <span class="s c" data-bind="gpu.vramTotal" data-fmt="2dec" data-unit="GB" data-tip-key="gpuVramTotal">15.99<sup>GB</sup></span>
-    </div>
-  </section>
-
-  <!-- ===================== CPU ===================== -->
-  <section class="panel cpu">
-    <h2><span class="s tl w" style="color:var(--orange)" data-bind="cpu.label" data-tip-key="cpuName">R7 9700X</span>
-      <span class="s nb" data-gauge="cpu.usagePercent" data-gauge-color="var(--gauge-color)" data-tip-key="cpuUsageGauge"></span>
-      <span class="s tr c" style="font-size:0.85em" data-bind="cpu.usagePercent" data-fmt="int" data-unit="%" data-tip-key="cpuUsagePercent">10<sup>%</sup></span>
-    </h2>
-    <div class="row">
-      <span class="s tl c" data-bind="cpu.temp" data-fmt="int" data-unit="°C" data-tip-key="cpuTemp">56<sup>°C</sup></span>
-      <span class="lbl-max">Max:</span>
-      <span class="s y" data-bind="cpu.tempMax" data-fmt="int" data-unit="°C" data-tip-key="cpuTempMax">67<sup>°C</sup></span>
-    </div>
-    <div class="row">
-      <span class="s nb tl" data-tip-key="cpuPowerIcon">
-        <svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L5 14 h6 l-2 8 8-12 h-6 z" fill="#fff"/></svg>
-      </span>
-      <span class="s c" data-bind="cpu.power" data-fmt="int" data-unit="W" data-tip-key="cpuPower">33<sup>W</sup></span>
-      <span class="s y" data-bind="cpu.powerMax" data-fmt="int" data-unit="W" data-tip-key="cpuPowerMax">75<sup>W</sup></span>
-    </div>
-    <div class="row cores">
-      <span class="s tl w" data-bind="cpu.cores.0" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore1">2365<sup>MHz</sup></span>
-      <span class="s w" data-bind="cpu.cores.1" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore2">1727<sup>MHz</sup></span>
-      <span class="s w" data-bind="cpu.cores.2" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore3">280<sup>MHz</sup></span>
-      <span class="s w" data-bind="cpu.cores.3" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore4">469<sup>MHz</sup></span>
-      <span class="s w" data-bind="cpu.cores.4" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore5">820<sup>MHz</sup></span>
-      <span class="s w" data-bind="cpu.cores.5" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore6">416<sup>MHz</sup></span>
-      <span class="s w" data-bind="cpu.cores.6" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore7">195<sup>MHz</sup></span>
-      <span class="s tr w" data-bind="cpu.cores.7" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore8">202<sup>MHz</sup></span>
-    </div>
-    <div class="row">
-      <span class="s tl o" data-tip-key="chipsetLabel">CHIPSET</span>
-      <span class="s c" data-bind="cpu.chipsetTemp" data-fmt="int" data-unit="°C" data-tip-key="chipsetTemp">56<sup>°C</sup></span>
-      <span class="s y" data-bind="cpu.chipsetTempMax" data-fmt="int" data-unit="°C" data-tip-key="chipsetTempMax">57<sup>°C</sup></span>
-    </div>
-  </section>
-
-  <!-- ===================== RAM ===================== -->
-  <section class="panel ram">
-    <h2><span class="s tl w" style="color:var(--orange)" data-tip-key="ramName">RAM</span>
-      <span class="s nb" data-gauge="derived.ramUsagePercent" data-gauge-color="var(--gauge-color)" data-tip-key="ramGauge"></span>
-    </h2>
-    <div class="row">
-      <span class="s tl w" data-tip-key="ramSlot1">#1</span>
-      <span class="s c" data-bind="ram.stick1.temp" data-fmt="int" data-unit="°C" data-tip-key="ram1Temp">43<sup>°C</sup></span>
-      <span class="s y" data-bind="ram.stick1.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ram1Max">43<sup>°C</sup></span>
-    </div>
-    <div class="row">
-      <span class="s tl w" data-tip-key="ramSlot2">#2</span>
-      <span class="s c" data-bind="ram.stick2.temp" data-fmt="int" data-unit="°C" data-tip-key="ram2Temp">45<sup>°C</sup></span>
-      <span class="s y" data-bind="ram.stick2.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ram2Max">45<sup>°C</sup></span>
-    </div>
-    <div class="row">
-      <span class="s tl c" data-bind="ram.freq" data-fmt="int" data-unit="MHz" data-tip-key="ramFreq">5800<sup>MHz</sup></span>
-    </div>
-    <div class="row">
-      <span class="s tl c" data-bind="ram.used" data-fmt="2dec" data-unit="GB" data-tip-key="ramUsed">25.14<sup>GB</sup></span>
-      <span class="lbl">/</span>
-      <span class="s c" data-bind="ram.total" data-fmt="int" data-unit="GB" data-tip-key="ramTotal">64<sup>GB</sup></span>
-    </div>
-  </section>
-
-  <!-- ===================== SSDs / +12V / +5V / +3V / PSU ===================== -->
-  <section class="panel store">
-    <div class="ssds">
-      <div class="ssd">
-        <div class="disk"><span class="s tl" data-bind="ssd.0.label" data-tip-key="ssd0Name">SSD M.2: 970 EVO+</span></div>
-        <div class="row">
-          <span class="s tl c" data-bind="ssd.0.temp" data-fmt="int" data-unit="°C" data-tip-key="ssd0Temp">34<sup>°C</sup></span>
-          <span class="s y" data-bind="ssd.0.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ssd0Max">35<sup>°C</sup></span>
-          <span class="s nb wr" data-gauge="ssd.0.writePercent" data-gauge-color="var(--gauge-color)" data-tip-key="ssd0Write"><small>Write</small></span>
-          <span class="s nb wr" data-gauge="ssd.0.readPercent" data-gauge-color="var(--gauge-color)" data-tip-key="ssd0Read"><small>Read</small></span>
-        </div>
-      </div>
-      <div class="ssd">
-        <div class="disk"><span class="s tl" data-bind="ssd.1.label" data-tip-key="ssd1Name">SSD M.2: 990 PRO</span></div>
-        <div class="row">
-          <span class="s tl c" data-bind="ssd.1.temp" data-fmt="int" data-unit="°C" data-tip-key="ssd1Temp">36<sup>°C</sup></span>
-          <span class="s y" data-bind="ssd.1.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ssd1Max">37<sup>°C</sup></span>
-          <span class="s nb wr" data-gauge="ssd.1.writePercent" data-gauge-color="var(--gauge-color)" data-tip-key="ssd1Write"><small>Write</small></span>
-          <span class="s nb wr tr" data-gauge="ssd.1.readPercent" data-gauge-color="var(--gauge-color)" data-tip-key="ssd1Read"><small>Read</small></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <span class="s tl o" data-tip-key="rail12vLabel">+12V</span>
-      <span class="s c" data-bind="rail12v.current" data-fmt="3dec" data-unit="V" data-tip-key="rail12vCurrent">11.884<sup>V</sup></span>
-      <span class="volt-graph" tabindex="0" data-tip-key="rail12vGraph"><span class="tick"></span></span>
-      <span class="s p" data-bind="rail12v.min" data-fmt="3dec" data-unit="V" data-tip-key="rail12vMin">11.788<sup>V</sup></span>
-      <span class="s tr y" data-bind="rail12v.max" data-fmt="3dec" data-unit="V" data-tip-key="rail12vMax">11.884<sup>V</sup></span>
-    </div>
-    <div class="row">
-      <span class="s tl o" data-tip-key="rail5vLabel">+5V</span>
-      <span class="s c" data-bind="rail5v.current" data-fmt="2dec" data-unit="V" data-tip-key="rail5vCurrent">5.02<sup>V</sup></span>
-      <span class="volt-graph" tabindex="0" data-tip-key="rail5vGraph"><span class="tick"></span></span>
-      <span class="s p" data-bind="rail5v.min" data-fmt="2dec" data-unit="V" data-tip-key="rail5vMin">5.02<sup>V</sup></span>
-      <span class="s tr y" data-bind="rail5v.max" data-fmt="2dec" data-unit="V" data-tip-key="rail5vMax">5.06<sup>V</sup></span>
-    </div>
-    <div class="row">
-      <span class="s tl o" data-tip-key="rail3vLabel">+3V</span>
-      <span class="s c" data-bind="rail3v.current" data-unit="V" data-tip-key="rail3vCurrent">3.31<sup>V</sup></span>
-      <span class="volt-graph" tabindex="0" data-tip-key="rail3vGraph"><span class="tick"></span></span>
-      <span class="s p" data-bind="rail3v.min" data-unit="V" data-tip-key="rail3vMin">3.296<sup>V</sup></span>
-      <span class="s tr y" data-bind="rail3v.max" data-unit="V" data-tip-key="rail3vMax">3.31<sup>V</sup></span>
-    </div>
-    <div class="row">
-      <span class="s tl o" data-tip-key="psuLabel">PSU</span>
-      <span class="s c" data-bind="psu.temp" data-fmt="int" data-unit="°C" data-tip-key="psuTemp">44<sup>°C</sup></span>
-      <span class="s y" data-bind="psu.tempMax" data-fmt="int" data-unit="°C" data-tip-key="psuTempMax">45<sup>°C</sup></span>
-    </div>
-  </section>
-
-  <!-- ===================== FPS / REFRESCO / RELOJ ===================== -->
-  <section class="panel fps">
-    <div class="row">
-      <span class="s tl g" data-bind="perf.api" data-tip-key="apiLabel">OGL</span>
-      <span class="s w" data-bind="perf.frametime" data-fmt="1dec" data-unit="ms" data-tip-key="frametime">999.6<sup>ms</sup></span>
-    </div>
-    <div class="row big">
-      <span class="s tl w" data-bind="perf.fps" data-fmt="int" data-suffix=" FPS" data-tip-key="fpsValue">1 FPS</span>
-    </div>
-    <div class="row hz">
-      <span class="s tl w" data-bind="perf.refreshHz" data-fmt="int" data-unit="Hz" data-tip-key="refreshHz">140<sup>Hz</sup></span>
-    </div>
-    <div class="clock"><span class="s tl c" data-bind="perf.clock" data-tip-key="clock">05:09:13 PM</span></div>
-  </section>
-
-</div><!-- /#stage -->
-</div><!-- /#stageWrap -->
-
-<script>
-(() => {
-  'use strict';
-
-  /* ================================================================
-     0) IDENTIDAD DE LA PÁGINA.
-        Un único const: cambiando este valor cambia el <title> del
-        navegador y el encabezado <h1> a la vez.
-     ================================================================ */
-  const APP_TITLE = 'ZAKK: Overlay RTSS DETAILED';
-
-  /* ================================================================
-     1) DATOS. Editar acá para reflejar una captura nueva del overlay.
-        Todo lo demás (texto, gauges, tooltips) se recalcula solo.
-        Es un const porque el OBJETO nunca se reemplaza — solo se
-        mutan sus propiedades (por eso computeDerived() puede seguir
-        escribiendo en DATA.derived más abajo sin problema).
-     ================================================================ */
-  const DATA = {
-    gpu: {
-      label: 'RTX 4080 SUPER',
-      temp: 34, tempMax: 38, hotspot: 42, vramTemp: 43, tempLimit: 84,
-      coreClock: 915, coreClockMax: 2610,
-      boostCeiling: 2900,        // referencia para el gauge de reloj (no se muestra)
-      power: 50, powerMax: 139, powerLimit: 320, powerUsagePercent: 21,
-      voltage: 0.960, voltageMax: 0.960,
-      vramUsed: 4.77, vramTotal: 15.99
-    },
-    cpu: {
-      label: 'R7 9700X',
-      usagePercent: 10,
-      temp: 56, tempMax: 67,
-      power: 33, powerMax: 75, powerLimitStock: 88,
-      cores: [2365, 1727, 280, 469, 820, 416, 195, 202],
-      chipsetTemp: 56, chipsetTempMax: 57
-    },
-    ram: {
-      stick1: { temp: 43, tempMax: 43 },
-      stick2: { temp: 45, tempMax: 45 },
-      freq: 5800,
-      used: 25.14, total: 64
-    },
-    psu: { temp: 44, tempMax: 45 },
-    ssd: [
-      { label: 'SSD M.2: 970 EVO+', role: 'secondary', temp: 34, tempMax: 35, writePercent: 3, readPercent: 1 },
-      { label: 'SSD M.2: 990 PRO',  role: 'primary',   temp: 36, tempMax: 37, writePercent: 4, readPercent: 2 }
-    ],
-    rail12v: { current: 11.884, min: 11.788, max: 11.884 },
-    rail5v: { current: 5.02, min: 5.02, max: 5.06 },
-    // La fuente reporta estos con una cantidad de decimales inconsistente
-    // (típico de RTSS); se guardan como texto para reproducirlo tal cual.
-    rail3v: { current: '3.31', min: '3.296', max: '3.31' },
-    perf: {
-      api: 'OGL',
-      frametime: 999.6,
-      fps: 1,
-      refreshHz: 140,
-      clock: '05:09:13 PM'
-    }
-  };
-  // Expuesto por si se quiere inspeccionar / actualizar desde la consola.
-  window.OVERLAY_DATA = DATA;
-
-  // Valores calculados a partir de DATA (porcentajes de gauge, etc).
-  // Se recalculan en cada render, así que si cambiás DATA siempre quedan al día.
-  const computeDerived = () => {
-    DATA.derived = {
-      gpuCoreClockPercent: Math.max(0, Math.min(100, Math.round(DATA.gpu.coreClock / DATA.gpu.boostCeiling * 100))),
-      ramUsagePercent: Math.round(DATA.ram.used / DATA.ram.total * 100)
-    };
-  };
-
-  /* ================================================================
-     2) TEXTO FIJO DE LA INTERFAZ (ES/EN), aparte de los tooltips.
-        Todo lo que ve la barra superior y la leyenda sale de acá.
-     ================================================================ */
-  const UI_STRINGS = {
-    en: {
-      intro: 'Hover (or Tab through) any value to see what that sensor measures.',
-      langLabel: 'Tooltip language:',
-      legendCyanName: 'Cyan',       legendCyanDesc: '= current value',
-      legendYellowName: 'Yellow',   legendYellowDesc: '= session maximum',
-      legendPinkName: 'Pink',       legendPinkDesc: '= session minimum',
-      legendOrangeName: 'Orange',   legendOrangeDesc: '= component name'
-    },
-    es: {
-      intro: 'Pasá el mouse (o navegá con Tab) sobre cualquier valor para ver qué mide ese sensor.',
-      langLabel: 'Idioma de tooltips:',
-      legendCyanName: 'Cian',       legendCyanDesc: '= valor actual',
-      legendYellowName: 'Amarillo', legendYellowDesc: '= máximo de la sesión',
-      legendPinkName: 'Rosa',       legendPinkDesc: '= mínimo de la sesión',
-      legendOrangeName: 'Naranja',  legendOrangeDesc: '= nombre del componente'
-    }
-  };
-
-  /* ================================================================
-     3) TOOLTIPS. Cada clave devuelve texto ES/EN calculado a partir
-        de DATA, así que si cambian los valores el texto se ajusta solo.
-     ================================================================ */
-  const TOOLTIPS = {
-    gpuName: {
-      es: (d) => `Tu placa de video (GPU): NVIDIA GeForce ${d.gpu.label} con ${d.gpu.vramTotal} GB de VRAM. Todos los datos de este panel son de la GPU.`,
-      en: (d) => `Your graphics card (GPU): NVIDIA GeForce ${d.gpu.label} with ${d.gpu.vramTotal} GB of VRAM. Everything in this panel is GPU data.`
-    },
-    gpuTemp: {
-      es: (d) => `Temperatura actual del núcleo de la GPU: ${d.gpu.temp} °C. En juego exigente lo normal es 60–75 °C.`,
-      en: (d) => `Current GPU core temperature: ${d.gpu.temp} °C. In demanding games, 60–75 °C is typical.`
-    },
-    gpuTempMax: {
-      es: (d) => `Temperatura máxima que alcanzó la GPU en la sesión: ${d.gpu.tempMax} °C.`,
-      en: (d) => `Highest GPU temperature recorded this session: ${d.gpu.tempMax} °C.`
-    },
-    gpuHotspot: {
-      es: (d) => `Hot Spot: temperatura del punto más caliente del chip, ${d.gpu.hotspot} °C. Siempre es mayor que la del núcleo; una diferencia de 8–15 °C es normal.`,
-      en: (d) => `Hot Spot: hottest point on the die, ${d.gpu.hotspot} °C. Always higher than the core reading; an 8–15 °C gap is normal.`
-    },
-    gpuVramTemp: {
-      es: (d) => `Temperatura de la memoria VRAM (memory junction): ${d.gpu.vramTemp} °C. La GDDR6X puede operar con seguridad hasta ~95 °C.`,
-      en: (d) => `VRAM temperature (memory junction): ${d.gpu.vramTemp} °C. GDDR6X can safely run up to ~95 °C.`
-    },
-    gpuTempLimit: {
-      es: (d) => `Límite térmico (Temp Limit): ${d.gpu.tempLimit} °C, la temperatura a la que la GPU baja frecuencias para protegerse (throttling).`,
-      en: (d) => `Temp Limit: ${d.gpu.tempLimit} °C, the temperature at which the GPU lowers clocks to protect itself (throttling).`
-    },
-    gpuCoreGauge: {
-      es: (d) => `Medidor gráfico de la frecuencia del núcleo: ${d.gpu.coreClock} MHz, ≈${d.derived.gpuCoreClockPercent}% de un techo de boost típico (~${d.gpu.boostCeiling} MHz).`,
-      en: (d) => `Graphical gauge of the core clock: ${d.gpu.coreClock} MHz, ≈${d.derived.gpuCoreClockPercent}% of a typical boost ceiling (~${d.gpu.boostCeiling} MHz).`
-    },
-    gpuCoreClock: {
-      es: (d) => `Frecuencia actual del núcleo gráfico: ${d.gpu.coreClock} MHz.`,
-      en: (d) => `Current GPU core clock: ${d.gpu.coreClock} MHz.`
-    },
-    gpuCoreClockMax: {
-      es: (d) => `Frecuencia máxima del núcleo alcanzada en la sesión: ${d.gpu.coreClockMax} MHz.`,
-      en: (d) => `Maximum core clock reached this session: ${d.gpu.coreClockMax} MHz.`
-    },
-    gpuPowerIcon: {
-      es: () => 'Ícono de consumo eléctrico: los valores a la derecha son la potencia de la GPU.',
-      en: () => 'Power draw icon: the values to the right are the GPU\'s power consumption.'
-    },
-    gpuPower: {
-      es: (d) => `Consumo eléctrico actual de la placa de video: ${d.gpu.power} W.`,
-      en: (d) => `Current power draw of the graphics card: ${d.gpu.power} W.`
-    },
-    gpuPowerMax: {
-      es: (d) => `Consumo máximo registrado en la sesión: ${d.gpu.powerMax} W.`,
-      en: (d) => `Maximum power draw recorded this session: ${d.gpu.powerMax} W.`
-    },
-    gpuPowerUsage: {
-      es: (d) => `Porcentaje del límite de potencia (TDP) en uso. El límite de la tarjeta es ${d.gpu.powerLimit} W, así que ${d.gpu.powerUsagePercent}% ≈ ${Math.round(d.gpu.powerLimit * d.gpu.powerUsagePercent / 100)} W.`,
-      en: (d) => `Percentage of the power limit (TDP) in use. The card's limit is ${d.gpu.powerLimit} W, so ${d.gpu.powerUsagePercent}% ≈ ${Math.round(d.gpu.powerLimit * d.gpu.powerUsagePercent / 100)} W.`
-    },
-    gpuVoltage: {
-      es: (d) => `Voltaje actual aplicado al núcleo de la GPU: ${d.gpu.voltage.toFixed(3)} V. Sube y baja junto con la frecuencia.`,
-      en: (d) => `Current voltage applied to the GPU core: ${d.gpu.voltage.toFixed(3)} V. It scales with clock speed.`
-    },
-    gpuVoltageMax: {
-      es: (d) => `Voltaje máximo del núcleo registrado en la sesión: ${d.gpu.voltageMax.toFixed(3)} V.`,
-      en: (d) => `Maximum core voltage recorded this session: ${d.gpu.voltageMax.toFixed(3)} V.`
-    },
-    gpuVramUsed: {
-      es: (d) => `Memoria de video ocupada en este momento: ${d.gpu.vramUsed} GB (texturas, framebuffers, etc.).`,
-      en: (d) => `Video memory currently in use: ${d.gpu.vramUsed} GB (textures, framebuffers, etc.).`
-    },
-    gpuVramTotal: {
-      es: (d) => `Total de VRAM de la placa: ${d.gpu.vramTotal} GB.`,
-      en: (d) => `Total VRAM on the card: ${d.gpu.vramTotal} GB.`
-    },
-
-    cpuName: {
-      es: (d) => `Tu procesador (CPU): AMD ${d.cpu.label}, 8 núcleos / 16 hilos, arquitectura Zen 5.`,
-      en: (d) => `Your processor (CPU): AMD ${d.cpu.label}, 8 cores / 16 threads, Zen 5 architecture.`
-    },
-    cpuUsageGauge: {
-      es: (d) => `Medidor gráfico del uso del CPU: ${d.cpu.usagePercent}% en este momento.`,
-      en: (d) => `Graphical gauge of CPU usage: ${d.cpu.usagePercent}% right now.`
-    },
-    cpuUsagePercent: {
-      es: (d) => `Uso total del procesador, promediando todos los núcleos: ${d.cpu.usagePercent}%.`,
-      en: (d) => `Total CPU usage, averaged across all cores: ${d.cpu.usagePercent}%.`
-    },
-    cpuTemp: {
-      es: (d) => `Temperatura actual del procesador (Tctl/Tdie): ${d.cpu.temp} °C. El límite del 9700X es 95 °C.`,
-      en: (d) => `Current CPU temperature (Tctl/Tdie): ${d.cpu.temp} °C. The 9700X's limit is 95 °C.`
-    },
-    cpuTempMax: {
-      es: (d) => `Temperatura máxima del CPU registrada en la sesión: ${d.cpu.tempMax} °C.`,
-      en: (d) => `Maximum CPU temperature recorded this session: ${d.cpu.tempMax} °C.`
-    },
-    cpuPowerIcon: {
-      es: () => 'Ícono de consumo eléctrico: los valores a la derecha son la potencia del CPU.',
-      en: () => 'Power draw icon: the values to the right are the CPU\'s power consumption.'
-    },
-    cpuPower: {
-      es: (d) => `Consumo eléctrico actual del CPU (package power): ${d.cpu.power} W${d.cpu.power > d.cpu.powerLimitStock ? ` (por encima del PPT de fábrica de ${d.cpu.powerLimitStock} W)` : ''}.`,
-      en: (d) => `Current CPU power draw (package power): ${d.cpu.power} W${d.cpu.power > d.cpu.powerLimitStock ? ` (above the stock ${d.cpu.powerLimitStock} W PPT)` : ''}.`
-    },
-    cpuPowerMax: {
-      es: (d) => `Consumo máximo del CPU registrado en la sesión: ${d.cpu.powerMax} W.`,
-      en: (d) => `Maximum CPU power draw recorded this session: ${d.cpu.powerMax} W.`
-    },
-    chipsetLabel: {
-      es: () => 'Chipset de la placa madre (en AM5: B650/X670/X870). Maneja puertos USB, SATA y líneas PCIe extra.',
-      en: () => 'Motherboard chipset (on AM5: B650/X670/X870). It handles USB ports, SATA, and extra PCIe lanes.'
-    },
-    chipsetTemp: {
-      es: (d) => `Temperatura actual del chipset: ${d.cpu.chipsetTemp} °C. Suelen correr calientes (50–65 °C) por tener disipador pasivo.`,
-      en: (d) => `Current chipset temperature: ${d.cpu.chipsetTemp} °C. They usually run warm (50–65 °C) since most have a passive heatsink.`
-    },
-    chipsetTempMax: {
-      es: (d) => `Temperatura máxima del chipset en la sesión: ${d.cpu.chipsetTempMax} °C.`,
-      en: (d) => `Maximum chipset temperature this session: ${d.cpu.chipsetTempMax} °C.`
-    },
-
-    ramName: {
-      es: () => 'Memoria RAM del sistema: DDR5 en dos módulos.',
-      en: () => 'System RAM: DDR5 across two modules.'
-    },
-    ramGauge: {
-      es: (d) => `Medidor gráfico del uso de RAM: ${d.ram.used} de ${d.ram.total} GB ≈ ${d.derived.ramUsagePercent}% ocupado.`,
-      en: (d) => `Graphical gauge of RAM usage: ${d.ram.used} of ${d.ram.total} GB ≈ ${d.derived.ramUsagePercent}% in use.`
-    },
-    ramSlot1: {
-      es: () => 'Módulo de RAM n.º 1 (stick #1): el más alejado del cooler del CPU.',
-      en: () => 'RAM module #1 (stick #1): the one farther from the CPU cooler.'
-    },
-    ramSlot2: {
-      es: () => 'Módulo de RAM n.º 2 (stick #2): el más cercano al cooler del CPU, por eso suele reportar una temperatura un poco más alta.',
-      en: () => 'RAM module #2 (stick #2): the one closest to the CPU cooler, which is why it usually reads a bit warmer.'
-    },
-    ram1Temp: {
-      es: (d) => `Temperatura actual del módulo de RAM n.º 1: ${d.ram.stick1.temp} °C. Las DDR5 traen sensor propio.`,
-      en: (d) => `Current temperature of RAM stick #1: ${d.ram.stick1.temp} °C. DDR5 has a built-in sensor.`
-    },
-    ram1Max: {
-      es: (d) => `Máxima temperatura del módulo 1 en la sesión: ${d.ram.stick1.tempMax} °C.`,
-      en: (d) => `Maximum temperature of stick 1 this session: ${d.ram.stick1.tempMax} °C.`
-    },
-    ram2Temp: {
-      es: (d) => `Temperatura actual del módulo de RAM n.º 2: ${d.ram.stick2.temp} °C. Suele estar un poco más caliente por estar más cerca del cooler del CPU.`,
-      en: (d) => `Current temperature of RAM stick #2: ${d.ram.stick2.temp} °C. It often runs a bit warmer because it sits closer to the CPU cooler.`
-    },
-    ram2Max: {
-      es: (d) => `Máxima temperatura del módulo 2 en la sesión: ${d.ram.stick2.tempMax} °C.`,
-      en: (d) => `Maximum temperature of stick 2 this session: ${d.ram.stick2.tempMax} °C.`
-    },
-    ramFreq: {
-      es: (d) => `Frecuencia efectiva de la memoria: DDR5-${d.ram.freq} (MT/s). El reloj real es la mitad, porque DDR = Double Data Rate.`,
-      en: (d) => `Effective memory speed: DDR5-${d.ram.freq} (MT/s). The real clock is half that, because DDR = Double Data Rate.`
-    },
-    ramUsed: {
-      es: (d) => `RAM ocupada en este momento por Windows y los programas abiertos: ${d.ram.used} GB (≈ ${d.derived.ramUsagePercent}%).`,
-      en: (d) => `RAM currently used by Windows and open programs: ${d.ram.used} GB (≈ ${d.derived.ramUsagePercent}%).`
-    },
-    ramTotal: {
-      es: (d) => `Total de RAM instalada: ${d.ram.total} GB.`,
-      en: (d) => `Total installed RAM: ${d.ram.total} GB.`
-    },
-
-    psuLabel: {
-      es: () => 'Fuente de alimentación (PSU). Que reporte datos significa que es una fuente digital con monitoreo.',
-      en: () => 'Power supply (PSU). Reporting data means it\'s a digital PSU with monitoring.'
-    },
-    psuTemp: {
-      es: (d) => `Temperatura interna actual de la fuente: ${d.psu.temp} °C.`,
-      en: (d) => `Current internal PSU temperature: ${d.psu.temp} °C.`
-    },
-    psuTempMax: {
-      es: (d) => `Temperatura máxima de la fuente en la sesión: ${d.psu.tempMax} °C.`,
-      en: (d) => `Maximum PSU temperature this session: ${d.psu.tempMax} °C.`
-    },
-
-    ssd0Name: {
-      es: (d) => `Tu ${d.ssd[0].role === 'primary' ? 'SSD principal' : 'segundo SSD'}: ${d.ssd[0].label.replace('SSD M.2: ', '')}.`,
-      en: (d) => `Your ${d.ssd[0].role === 'primary' ? 'main SSD' : 'second SSD'}: ${d.ssd[0].label.replace('SSD M.2: ', '')}.`
-    },
-    ssd0Temp: {
-      es: (d) => `Temperatura actual del disco: ${d.ssd[0].temp} °C. Los NVMe reducen velocidad (throttling) cerca de 70–80 °C.`,
-      en: (d) => `Current drive temperature: ${d.ssd[0].temp} °C. NVMe drives throttle around 70–80 °C.`
-    },
-    ssd0Max: {
-      es: (d) => `Temperatura máxima del disco en la sesión: ${d.ssd[0].tempMax} °C.`,
-      en: (d) => `Maximum drive temperature this session: ${d.ssd[0].tempMax} °C.`
-    },
-    ssd0Write: {
-      es: (d) => `Medidor de actividad de escritura: ${d.ssd[0].writePercent}% del tiempo escribiendo datos.`,
-      en: (d) => `Write activity gauge: ${d.ssd[0].writePercent}% of the time spent writing data.`
-    },
-    ssd0Read: {
-      es: (d) => `Medidor de actividad de lectura: ${d.ssd[0].readPercent}% del tiempo leyendo datos.`,
-      en: (d) => `Read activity gauge: ${d.ssd[0].readPercent}% of the time spent reading data.`
-    },
-    ssd1Name: {
-      es: (d) => `Tu ${d.ssd[1].role === 'primary' ? 'SSD principal' : 'segundo SSD'}: ${d.ssd[1].label.replace('SSD M.2: ', '')}.`,
-      en: (d) => `Your ${d.ssd[1].role === 'primary' ? 'main SSD' : 'second SSD'}: ${d.ssd[1].label.replace('SSD M.2: ', '')}.`
-    },
-    ssd1Temp: {
-      es: (d) => `Temperatura actual del disco: ${d.ssd[1].temp} °C. Los NVMe reducen velocidad (throttling) cerca de 70–80 °C.`,
-      en: (d) => `Current drive temperature: ${d.ssd[1].temp} °C. NVMe drives throttle around 70–80 °C.`
-    },
-    ssd1Max: {
-      es: (d) => `Temperatura máxima del disco en la sesión: ${d.ssd[1].tempMax} °C.`,
-      en: (d) => `Maximum drive temperature this session: ${d.ssd[1].tempMax} °C.`
-    },
-    ssd1Write: {
-      es: (d) => `Medidor de actividad de escritura: ${d.ssd[1].writePercent}% del tiempo escribiendo datos.`,
-      en: (d) => `Write activity gauge: ${d.ssd[1].writePercent}% of the time spent writing data.`
-    },
-    ssd1Read: {
-      es: (d) => `Medidor de actividad de lectura: ${d.ssd[1].readPercent}% del tiempo leyendo datos.`,
-      en: (d) => `Read activity gauge: ${d.ssd[1].readPercent}% of the time spent reading data.`
-    },
-
-    rail12vLabel: {
-      es: () => 'Línea de +12 V de la fuente: la más importante, alimenta CPU y GPU. Tolerancia ATX: ±5% (11.4–12.6 V).',
-      en: () => '+12 V rail of the PSU: the most important one, it powers the CPU and GPU. ATX tolerance: ±5% (11.4–12.6 V).'
-    },
-    rail12vCurrent: {
-      es: (d) => `Voltaje actual de la línea de 12 V: ${d.rail12v.current.toFixed(3)} V.`,
-      en: (d) => `Current 12 V rail voltage: ${d.rail12v.current.toFixed(3)} V.`
-    },
-    rail12vGraph: {
-      es: () => 'Mini gráfico de historial: traza cómo varió el voltaje de +12V a lo largo del tiempo. La marca vertical indica el punto donde se registró el valor mínimo de la sesión.',
-      en: () => 'Mini history graph: traces how the +12V voltage varied over time. The vertical mark shows where the session\'s minimum value was recorded.'
-    },
-    rail12vMin: {
-      es: (d) => `Voltaje mínimo de la sesión: ${d.rail12v.min.toFixed(3)} V, registrado en el pico de carga.`,
-      en: (d) => `Session minimum voltage: ${d.rail12v.min.toFixed(3)} V, recorded at peak load.`
-    },
-    rail12vMax: {
-      es: (d) => `Voltaje máximo de la sesión en la línea de 12 V: ${d.rail12v.max.toFixed(3)} V.`,
-      en: (d) => `Session maximum voltage on the 12 V rail: ${d.rail12v.max.toFixed(3)} V.`
-    },
-
-    rail5vLabel: {
-      es: () => 'Línea de +5 V: alimenta puertos USB, SATA y parte de la placa. Tolerancia ATX: ±5% (4.75–5.25 V).',
-      en: () => '+5 V rail: powers USB ports, SATA, and parts of the board. ATX tolerance: ±5% (4.75–5.25 V).'
-    },
-    rail5vCurrent: {
-      es: (d) => `Voltaje actual de la línea de 5 V: ${d.rail5v.current.toFixed(2)} V.`,
-      en: (d) => `Current 5 V rail voltage: ${d.rail5v.current.toFixed(2)} V.`
-    },
-    rail5vGraph: {
-      es: () => 'Mini gráfico de historial de la línea de 5 V a lo largo del tiempo.',
-      en: () => 'Mini history graph of the 5 V rail over time.'
-    },
-    rail5vMin: {
-      es: (d) => `Voltaje mínimo de la sesión en la línea de 5 V: ${d.rail5v.min.toFixed(2)} V.`,
-      en: (d) => `Session minimum voltage on the 5 V rail: ${d.rail5v.min.toFixed(2)} V.`
-    },
-    rail5vMax: {
-      es: (d) => `Voltaje máximo de la sesión en la línea de 5 V: ${d.rail5v.max.toFixed(2)} V.`,
-      en: (d) => `Session maximum voltage on the 5 V rail: ${d.rail5v.max.toFixed(2)} V.`
-    },
-
-    rail3vLabel: {
-      es: () => 'Línea de +3.3 V: alimenta principalmente la placa madre y ranuras M.2. Tolerancia ATX: ±5% (3.14–3.47 V).',
-      en: () => '+3.3 V rail: mainly powers the motherboard and M.2 slots. ATX tolerance: ±5% (3.14–3.47 V).'
-    },
-    rail3vCurrent: {
-      es: (d) => `Voltaje actual de la línea de 3.3 V: ${d.rail3v.current} V.`,
-      en: (d) => `Current 3.3 V rail voltage: ${d.rail3v.current} V.`
-    },
-    rail3vGraph: {
-      es: () => 'Mini gráfico de historial de la línea de 3.3 V a lo largo del tiempo.',
-      en: () => 'Mini history graph of the 3.3 V rail over time.'
-    },
-    rail3vMin: {
-      es: (d) => `Voltaje mínimo de la sesión en la línea de 3.3 V: ${d.rail3v.min} V.`,
-      en: (d) => `Session minimum voltage on the 3.3 V rail: ${d.rail3v.min} V.`
-    },
-    rail3vMax: {
-      es: (d) => `Voltaje máximo de la sesión en la línea de 3.3 V: ${d.rail3v.max} V. La cantidad de decimales varía porque así la reporta la fuente.`,
-      en: (d) => `Session maximum voltage on the 3.3 V rail: ${d.rail3v.max} V. The decimal precision varies because that's how the PSU reports it.`
-    },
-
-    apiLabel: {
-      es: (d) => `API gráfica que usa la aplicación monitoreada: ${d.perf.api}.`,
-      en: (d) => `Graphics API used by the monitored app: ${d.perf.api}.`
-    },
-    frametime: {
-      es: (d) => `Frametime: cuánto tarda en generarse cada cuadro, ${d.perf.frametime} ms.${d.perf.frametime > 50 ? ' Es muy alto: señal de un stutter (carga, compilación de shaders, o un cuelgue puntual del motor).' : ' Un frametime estable importa más que el número de FPS.'}`,
-      en: (d) => `Frametime: how long each frame takes to render, ${d.perf.frametime} ms.${d.perf.frametime > 50 ? ' That\'s very high: a sign of a stutter (loading, shader compilation, or a momentary engine hitch).' : ' A stable frametime matters more than the FPS number.'}`
-    },
-    fpsValue: {
-      es: (d) => {
-        const gpuLow = d.gpu.powerUsagePercent < 40;
-        const cpuLow = d.cpu.usagePercent < 40;
-        let verdict;
-        if (gpuLow && cpuLow) verdict = 'ninguno está saturado, así que el cuello de botella es otra cosa (carga de disco, compilación de shaders, o un cuelgue puntual del motor)';
-        else if (!gpuLow && cpuLow) verdict = 'esto pinta como un escenario limitado por GPU (GPU bound)';
-        else if (gpuLow && !cpuLow) verdict = 'esto pinta como un escenario limitado por CPU (CPU bound): el procesador no llega a alimentar más rápido a la GPU';
-        else verdict = 'tanto la GPU como el CPU están trabajando fuerte acá';
-        return `Cuadros por segundo que renderiza la aplicación: ${d.perf.fps} FPS. Con la GPU al ${d.gpu.powerUsagePercent}% de potencia y el CPU al ${d.cpu.usagePercent}% de uso, ${verdict}.`;
-      },
-      en: (d) => {
-        const gpuLow = d.gpu.powerUsagePercent < 40;
-        const cpuLow = d.cpu.usagePercent < 40;
-        let verdict;
-        if (gpuLow && cpuLow) verdict = 'neither is saturated, so the bottleneck is something else (disk loading, shader compilation, or a momentary engine hitch)';
-        else if (!gpuLow && cpuLow) verdict = 'this looks GPU-bound';
-        else if (gpuLow && !cpuLow) verdict = 'this looks CPU-bound: the processor can\'t feed the GPU any faster';
-        else verdict = 'both the GPU and CPU are working hard here';
-        return `Frames per second the app is rendering: ${d.perf.fps} FPS. With the GPU at ${d.gpu.powerUsagePercent}% power and the CPU at ${d.cpu.usagePercent}% usage, ${verdict}.`;
+      #stage.stack {
+        position: static;
+        width: 100%;
+        transform: none !important;
+        font-size: 18px;
+        grid-template-columns: 1fr;
+        grid-template-rows: none;
+        grid-template-areas: "gpu" "cpu" "ram" "store" "fps";
       }
-    },
-    refreshHz: {
-      es: (d) => `Frecuencia de actualización del monitor: ${d.perf.refreshHz} Hz. Con ${d.perf.fps} FPS estás ${d.perf.fps < d.perf.refreshHz ? 'lejos del tope del monitor' : 'en o por encima del tope del monitor'} en esta escena.`,
-      en: (d) => `Monitor refresh rate: ${d.perf.refreshHz} Hz. At ${d.perf.fps} FPS you're ${d.perf.fps < d.perf.refreshHz ? 'well below the monitor\'s ceiling' : 'at or above the monitor\'s ceiling'} in this scene.`
-    },
-    clock: {
-      es: () => 'Hora actual del sistema. Útil para saber cuánto llevás jugando de un vistazo.',
-      en: () => 'Current system time. Handy for keeping track of how long you\'ve been playing.'
-    }
-  };
 
-  // Las 8 frecuencias de núcleo comparten la misma plantilla de tooltip;
-  // se generan en un loop. Ojo: usamos `let i` (no `var i`) a propósito:
-  // con `let`, cada vuelta del for crea una ligadura nueva de `i`, así que
-  // cada arrow function de abajo "recuerda" su propio número de núcleo.
-  // Con `var` todas las funciones terminarían compartiendo el mismo `i`
-  // final (el clásico bug de closures en loops) y las 8 tooltips dirían
-  // "núcleo 9". Este es el motivo real para preferir let sobre var.
-  for (let i = 1; i <= 8; i++) {
-    TOOLTIPS[`cpuCore${i}`] = {
-      es: (d) => `Frecuencia del núcleo ${i}: ${d.cpu.cores[i - 1]} MHz.`,
-      en: (d) => `Core ${i} clock speed: ${d.cpu.cores[i - 1]} MHz.`
-    };
-  }
+      #stage.stack .ssds {
+        flex-direction: column;
+        gap: 8px
+      }
 
-  /* ================================================================
-     4) MOTOR DE RENDERIZADO: título, texto fijo, valores, gauges
-        (SVG generado) y tooltips. Todas funciones flecha porque
-        ninguna necesita su propio `this`.
-     ================================================================ */
-  const getPath = (obj, path) =>
-    path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
+      #stage.stack .hz {
+        padding-top: 0.4em
+      }
 
-  const fmtValue = (v, spec) => {
-    if (v === undefined || v === null) return '';
-    if (spec === 'int') return String(Math.round(v));
-    if (spec === '1dec') return Number(v).toFixed(1);
-    if (spec === '2dec') return Number(v).toFixed(2);
-    if (spec === '3dec') return Number(v).toFixed(3);
-    return String(v);
-  };
+      #stage.stack .volt-graph {
+        min-width: 24px
+      }
 
-  const renderTitle = () => {
-    document.title = APP_TITLE;
-    const h1 = document.getElementById('appTitle');
-    if (!h1) return;
-    const idx = APP_TITLE.indexOf(':');
-    // Resalta el prefijo antes de ":" en naranja (mismo estilo que antes),
-    // usando la regla CSS "header h1 span" que ya existe.
-    h1.innerHTML = idx === -1
-      ? APP_TITLE
-      : `<span>${APP_TITLE.slice(0, idx)}</span>${APP_TITLE.slice(idx)}`;
-  };
+      @media (prefers-reduced-motion:reduce) {
 
-  const renderUIStrings = (lang) => {
-    const dict = UI_STRINGS[lang] || UI_STRINGS.en;
-    document.querySelectorAll('[data-i18n]').forEach((el) => {
-      const key = el.getAttribute('data-i18n');
-      if (dict[key] !== undefined) el.textContent = dict[key];
-    });
-  };
+        #tip,
+        .lang button {
+          transition: none
+        }
+      }
+    </style>
+  </head>
 
-  const renderValues = () => {
-    document.querySelectorAll('[data-bind]').forEach((el) => {
-      const raw = getPath(DATA, el.getAttribute('data-bind'));
-      const val = fmtValue(raw, el.getAttribute('data-fmt'));
-      const unit = el.getAttribute('data-unit');
-      const suffix = el.getAttribute('data-suffix');
-      el.innerHTML = val + (unit ? `<sup>${unit}</sup>` : '') + (suffix || '');
-    });
-  };
+  <body>
 
-  // ---- Gauges: arco + aguja generados a partir de un porcentaje ----
-  const polarToCartesian = (cx, cy, r, angleDeg) => {
-    const a = (angleDeg - 90) * Math.PI / 180;
-    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
-  };
-  const arcPath = (cx, cy, r, startAngle, endAngle) => {
-    const s = polarToCartesian(cx, cy, r, startAngle);
-    const e = polarToCartesian(cx, cy, r, endAngle);
-    const largeArc = (endAngle - startAngle) <= 180 ? 0 : 1;
-    return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
-  };
-  const gaugeSVG = (percent, color) => {
-    const cx = 20, cy = 20, r = 14, start = -135, sweep = 270, end = start + sweep;
-    const pct = Math.max(0, Math.min(100, Number(percent) || 0));
-    const valAngle = start + sweep * (pct / 100);
-    const track = arcPath(cx, cy, r, start, end);
-    const value = pct > 0.5 ? arcPath(cx, cy, r, start, valAngle) : '';
-    const needle = polarToCartesian(cx, cy, r - 1, valAngle);
-    return `<svg class="g-ico" viewBox="0 0 40 40" aria-hidden="true">
+    <header>
+      <h1 id="appTitle">ZAKK: Overlay RTSS DETAILED</h1>
+      <p id="intro" data-i18n="intro">Hover (or Tab through) any value to see
+        what that sensor measures.</p>
+      <div class="lang" role="group" aria-label="Tooltip language">
+        <span id="langLabel" data-i18n="langLabel">Tooltip language:</span>
+        <button id="btn-es" type="button" onclick="setLang('es')">ES</button>
+        <button id="btn-en" class="active" type="button"
+          onclick="setLang('en')">EN</button>
+      </div>
+    </header>
+
+    <div class="legend">
+      <span><span class="sw" style="background:var(--cyan)"></span><b
+          style="color:var(--cyan)" data-i18n="legendCyanName">Cyan</b> <span
+          data-i18n="legendCyanDesc">= current value</span></span>
+      <span><span class="sw" style="background:var(--yellow)"></span><b
+          style="color:var(--yellow)" data-i18n="legendYellowName">Yellow</b>
+        <span data-i18n="legendYellowDesc">= session maximum</span></span>
+      <span><span class="sw" style="background:var(--pink)"></span><b
+          style="color:var(--pink)" data-i18n="legendPinkName">Pink</b> <span
+          data-i18n="legendPinkDesc">= session minimum</span></span>
+      <span><span class="sw" style="background:var(--orange)"></span><b
+          style="color:var(--orange)" data-i18n="legendOrangeName">Orange</b>
+        <span data-i18n="legendOrangeDesc">= component name</span></span>
+    </div>
+
+    <div id="stageWrap">
+      <div id="stage">
+
+        <!-- ===================== GPU ===================== -->
+        <section class="panel gpu">
+          <h2><span class="s tl w" style="color:var(--orange)"
+              data-bind="gpu.label" data-tip-key="gpuName">RTX 4080 SUPER</span>
+          </h2>
+          <div class="row">
+            <span class="s tl c" data-bind="gpu.temp" data-fmt="int"
+              data-unit="°C" data-tip-key="gpuTemp">34<sup>°C</sup></span>
+            <span class="lbl-max">Max:</span>
+            <span class="s y" data-bind="gpu.tempMax" data-fmt="int"
+              data-unit="°C" data-tip-key="gpuTempMax">38<sup>°C</sup></span>
+            <span class="s c" data-bind="gpu.vramTemp" data-fmt="int"
+              data-unit="°C" data-tip-key="gpuVramTemp">43<sup>°C</sup></span>
+            <span class="s c" data-bind="gpu.hotspot" data-fmt="int"
+              data-unit="°C" data-tip-key="gpuHotspot">42<sup>°C</sup></span>
+            <span class="s" style="color:var(--temp-limit)" data-bind="gpu.tempLimit" data-fmt="int"
+              data-unit="°C" data-tip-key="gpuTempLimit">84<sup>°C</sup></span>
+          </div>
+          <div class="row">
+            <span class="lbl">Core:</span>
+            <span class="s nb" data-gauge="derived.gpuCoreClockPercent"
+              data-gauge-color="var(--gauge-color)"
+              data-tip-key="gpuCoreGauge"></span>
+            <span class="s c" data-bind="gpu.coreClock" data-fmt="int"
+              data-unit="MHz"
+              data-tip-key="gpuCoreClock">915<sup>MHz</sup></span>
+            <span class="s y" data-bind="gpu.coreClockMax" data-fmt="int"
+              data-unit="MHz"
+              data-tip-key="gpuCoreClockMax">2610<sup>MHz</sup></span>
+          </div>
+          <div class="row">
+            <span class="s nb tl" data-tip-key="gpuPowerIcon">
+              <svg class="bolt" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M13 2 L5 14 h6 l-2 8 8-12 h-6 z" fill="#fff" />
+              </svg>
+            </span>
+            <span class="s c" data-bind="gpu.power" data-fmt="int" data-unit="W"
+              data-tip-key="gpuPower">50<sup>W</sup></span>
+            <span class="s y" data-bind="gpu.powerMax" data-fmt="int"
+              data-unit="W" data-tip-key="gpuPowerMax">139<sup>W</sup></span>
+            <span class="lbl">Power Usage:</span>
+            <span class="s c" data-bind="gpu.powerUsagePercent" data-fmt="int"
+              data-unit="%" data-tip-key="gpuPowerUsage">21<sup>%</sup></span>
+          </div>
+          <div class="row">
+            <span class="lbl">Core Voltage:</span>
+            <span class="s c" data-bind="gpu.voltage" data-fmt="3dec"
+              data-unit="V" data-tip-key="gpuVoltage">0.960<sup>V</sup></span>
+            <span class="s y" data-bind="gpu.voltageMax" data-fmt="3dec"
+              data-unit="V"
+              data-tip-key="gpuVoltageMax">0.960<sup>V</sup></span>
+          </div>
+          <div class="row">
+            <span class="lbl">VRAM Usage:</span>
+            <span class="s c" data-bind="gpu.vramUsed" data-fmt="2dec"
+              data-unit="GB" data-tip-key="gpuVramUsed">4.77<sup>GB</sup></span>
+            <span class="lbl">/</span>
+            <span class="s c" data-bind="gpu.vramTotal" data-fmt="2dec"
+              data-unit="GB"
+              data-tip-key="gpuVramTotal">15.99<sup>GB</sup></span>
+          </div>
+        </section>
+
+        <!-- ===================== CPU ===================== -->
+        <section class="panel cpu">
+          <h2><span class="s tl w" style="color:var(--orange)"
+              data-bind="cpu.label" data-tip-key="cpuName">R7 9700X</span>
+            <span class="s nb" data-gauge="cpu.usagePercent"
+              data-gauge-color="var(--gauge-color)"
+              data-tip-key="cpuUsageGauge"></span>
+            <span class="s tr c" style="font-size:0.85em"
+              data-bind="cpu.usagePercent" data-fmt="int" data-unit="%"
+              data-tip-key="cpuUsagePercent">10<sup>%</sup></span>
+          </h2>
+          <div class="row">
+            <span class="s tl c" data-bind="cpu.temp" data-fmt="int"
+              data-unit="°C" data-tip-key="cpuTemp">56<sup>°C</sup></span>
+            <span class="lbl-max">Max:</span>
+            <span class="s y" data-bind="cpu.tempMax" data-fmt="int"
+              data-unit="°C" data-tip-key="cpuTempMax">67<sup>°C</sup></span>
+          </div>
+          <div class="row">
+            <span class="s nb tl" data-tip-key="cpuPowerIcon">
+              <svg class="bolt" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M13 2 L5 14 h6 l-2 8 8-12 h-6 z" fill="#fff" />
+              </svg>
+            </span>
+            <span class="s c" data-bind="cpu.power" data-fmt="int" data-unit="W"
+              data-tip-key="cpuPower">33<sup>W</sup></span>
+            <span class="s y" data-bind="cpu.powerMax" data-fmt="int"
+              data-unit="W" data-tip-key="cpuPowerMax">75<sup>W</sup></span>
+          </div>
+          <div class="row cores">
+            <span class="s tl w" data-bind="cpu.cores.0" data-fmt="int"
+              data-unit="MHz" data-tip-key="cpuCore1">2365<sup>MHz</sup></span>
+            <span class="s w" data-bind="cpu.cores.1" data-fmt="int"
+              data-unit="MHz" data-tip-key="cpuCore2">1727<sup>MHz</sup></span>
+            <span class="s w" data-bind="cpu.cores.2" data-fmt="int"
+              data-unit="MHz" data-tip-key="cpuCore3">280<sup>MHz</sup></span>
+            <span class="s w" data-bind="cpu.cores.3" data-fmt="int"
+              data-unit="MHz" data-tip-key="cpuCore4">469<sup>MHz</sup></span>
+            <span class="s w" data-bind="cpu.cores.4" data-fmt="int"
+              data-unit="MHz" data-tip-key="cpuCore5">820<sup>MHz</sup></span>
+            <span class="s w" data-bind="cpu.cores.5" data-fmt="int"
+              data-unit="MHz" data-tip-key="cpuCore6">416<sup>MHz</sup></span>
+            <span class="s w" data-bind="cpu.cores.6" data-fmt="int"
+              data-unit="MHz" data-tip-key="cpuCore7">195<sup>MHz</sup></span>
+            <span class="s tr w" data-bind="cpu.cores.7" data-fmt="int"
+              data-unit="MHz" data-tip-key="cpuCore8">202<sup>MHz</sup></span>
+          </div>
+          <div class="row">
+            <span class="s sm tl o" data-tip-key="chipsetLabel">CHIPSET</span>
+            <span class="s sm c" data-bind="cpu.chipsetTemp" data-fmt="int"
+              data-unit="°C" data-tip-key="chipsetTemp">56<sup>°C</sup></span>
+            <span class="s sm y" data-bind="cpu.chipsetTempMax" data-fmt="int"
+              data-unit="°C"
+              data-tip-key="chipsetTempMax">57<sup>°C</sup></span>
+          </div>
+        </section>
+
+        <!-- ===================== RAM ===================== -->
+        <section class="panel ram">
+          <h2><span class="s tl w" style="color:var(--orange)"
+              data-tip-key="ramName">RAM</span>
+            <span class="s nb" data-gauge="derived.ramUsagePercent"
+              data-gauge-color="var(--gauge-color)"
+              data-tip-key="ramGauge"></span>
+          </h2>
+          <div class="row">
+            <span class="s tl w" data-tip-key="ramSlot1">#1</span>
+            <span class="s c" data-bind="ram.stick1.temp" data-fmt="int"
+              data-unit="°C" data-tip-key="ram1Temp">43<sup>°C</sup></span>
+            <span class="s y" data-bind="ram.stick1.tempMax" data-fmt="int"
+              data-unit="°C" data-tip-key="ram1Max">43<sup>°C</sup></span>
+          </div>
+          <div class="row">
+            <span class="s tl w" data-tip-key="ramSlot2">#2</span>
+            <span class="s c" data-bind="ram.stick2.temp" data-fmt="int"
+              data-unit="°C" data-tip-key="ram2Temp">45<sup>°C</sup></span>
+            <span class="s y" data-bind="ram.stick2.tempMax" data-fmt="int"
+              data-unit="°C" data-tip-key="ram2Max">45<sup>°C</sup></span>
+          </div>
+          <div class="row">
+            <span class="s tl c" data-bind="ram.freq" data-fmt="int"
+              data-unit="MHz" data-tip-key="ramFreq">5800<sup>MHz</sup></span>
+          </div>
+          <div class="row">
+            <span class="s tl c" data-bind="ram.used" data-fmt="2dec"
+              data-unit="GB" data-tip-key="ramUsed">25.14<sup>GB</sup></span>
+            <span class="lbl">/</span>
+            <span class="s c" data-bind="ram.total" data-fmt="int"
+              data-unit="GB" data-tip-key="ramTotal">64<sup>GB</sup></span>
+          </div>
+        </section>
+
+        <!-- ===================== SSDs / +12V / +5V / +3V / PSU ===================== -->
+        <section class="panel store">
+          <div class="ssds">
+            <div class="ssd">
+              <div class="disk"><span class="s tl" data-bind="ssd.0.label"
+                  data-tip-key="ssd0Name">SSD M.2: 970 EVO+</span></div>
+              <div class="row">
+                <span class="s tl c" data-bind="ssd.0.temp" data-fmt="int"
+                  data-unit="°C" data-tip-key="ssd0Temp">34<sup>°C</sup></span>
+                <span class="s y" data-bind="ssd.0.tempMax" data-fmt="int"
+                  data-unit="°C" data-tip-key="ssd0Max">35<sup>°C</sup></span>
+                <span class="s nb wr" data-gauge="ssd.0.writePercent"
+                  data-gauge-color="var(--gauge-color)"
+                  data-tip-key="ssd0Write"><small>Write</small></span>
+                <span class="s nb wr" data-gauge="ssd.0.readPercent"
+                  data-gauge-color="var(--gauge-color)"
+                  data-tip-key="ssd0Read"><small>Read</small></span>
+              </div>
+            </div>
+            <div class="ssd">
+              <div class="disk"><span class="s tl" data-bind="ssd.1.label"
+                  data-tip-key="ssd1Name">SSD M.2: 990 PRO</span></div>
+              <div class="row">
+                <span class="s tl c" data-bind="ssd.1.temp" data-fmt="int"
+                  data-unit="°C" data-tip-key="ssd1Temp">36<sup>°C</sup></span>
+                <span class="s y" data-bind="ssd.1.tempMax" data-fmt="int"
+                  data-unit="°C" data-tip-key="ssd1Max">37<sup>°C</sup></span>
+                <span class="s nb wr" data-gauge="ssd.1.writePercent"
+                  data-gauge-color="var(--gauge-color)"
+                  data-tip-key="ssd1Write"><small>Write</small></span>
+                <span class="s nb wr tr" data-gauge="ssd.1.readPercent"
+                  data-gauge-color="var(--gauge-color)"
+                  data-tip-key="ssd1Read"><small>Read</small></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <span class="s tl o" data-tip-key="rail12vLabel">+12V</span>
+            <span class="s c" data-bind="rail12v.current" data-fmt="3dec"
+              data-unit="V"
+              data-tip-key="rail12vCurrent">11.884<sup>V</sup></span>
+            <span class="volt-graph" tabindex="0"
+              data-tip-key="rail12vGraph"><span class="tick"></span></span>
+            <span class="s p" data-bind="rail12v.min" data-fmt="3dec"
+              data-unit="V" data-tip-key="rail12vMin">11.788<sup>V</sup></span>
+            <span class="s tr y" data-bind="rail12v.max" data-fmt="3dec"
+              data-unit="V" data-tip-key="rail12vMax">11.884<sup>V</sup></span>
+          </div>
+          <div class="row">
+            <span class="s tl o" data-tip-key="rail5vLabel">+5V</span>
+            <span class="s c" data-bind="rail5v.current" data-fmt="2dec"
+              data-unit="V" data-tip-key="rail5vCurrent">5.02<sup>V</sup></span>
+            <span class="volt-graph" tabindex="0"
+              data-tip-key="rail5vGraph"><span class="tick"></span></span>
+            <span class="s p" data-bind="rail5v.min" data-fmt="2dec"
+              data-unit="V" data-tip-key="rail5vMin">5.02<sup>V</sup></span>
+            <span class="s tr y" data-bind="rail5v.max" data-fmt="2dec"
+              data-unit="V" data-tip-key="rail5vMax">5.06<sup>V</sup></span>
+          </div>
+          <div class="row">
+            <span class="s tl o" data-tip-key="rail3vLabel">+3V</span>
+            <span class="s c" data-bind="rail3v.current" data-unit="V"
+              data-tip-key="rail3vCurrent">3.31<sup>V</sup></span>
+            <span class="volt-graph" tabindex="0"
+              data-tip-key="rail3vGraph"><span class="tick"></span></span>
+            <span class="s p" data-bind="rail3v.min" data-unit="V"
+              data-tip-key="rail3vMin">3.296<sup>V</sup></span>
+            <span class="s tr y" data-bind="rail3v.max" data-unit="V"
+              data-tip-key="rail3vMax">3.31<sup>V</sup></span>
+          </div>
+          <div class="row">
+            <span class="s tl o" data-tip-key="psuLabel">PSU</span>
+            <span class="s c" data-bind="psu.temp" data-fmt="int" data-unit="°C"
+              data-tip-key="psuTemp">44<sup>°C</sup></span>
+            <span class="s y" data-bind="psu.tempMax" data-fmt="int"
+              data-unit="°C" data-tip-key="psuTempMax">45<sup>°C</sup></span>
+          </div>
+        </section>
+
+        <!-- ===================== FPS / REFRESCO / RELOJ ===================== -->
+        <section class="panel fps">
+          <div class="row">
+            <span class="s tl g" data-bind="perf.api"
+              data-tip-key="apiLabel">OGL</span>
+            <span class="s w" data-bind="perf.frametime" data-fmt="1dec"
+              data-unit="ms" data-tip-key="frametime">999.6<sup>ms</sup></span>
+          </div>
+          <div class="row big">
+            <span class="s tl w" data-bind="perf.fps" data-fmt="int"
+              data-suffix=" FPS" data-tip-key="fpsValue">1 FPS</span>
+          </div>
+          <div class="row hz">
+            <span class="s tl w" data-bind="perf.refreshHz" data-fmt="int"
+              data-unit="Hz" data-tip-key="refreshHz">140<sup>Hz</sup></span>
+          </div>
+          <div class="clock"><span class="s tl c" data-bind="perf.clock"
+              data-tip-key="clock">05:09:13 PM</span></div>
+        </section>
+
+      </div><!-- /#stage -->
+    </div><!-- /#stageWrap -->
+
+    <script>
+      (() => {
+        'use strict';
+
+        /* ================================================================
+           0) IDENTIDAD DE LA PÁGINA.
+              Un único const: cambiando este valor cambia el <title> del
+              navegador y el encabezado <h1> a la vez.
+           ================================================================ */
+        const APP_TITLE = 'ZAKK: Overlay RTSS DETAILED';
+
+        /* ================================================================
+           1) DATOS. Editar acá para reflejar una captura nueva del overlay.
+              Todo lo demás (texto, gauges, tooltips) se recalcula solo.
+              Es un const porque el OBJETO nunca se reemplaza — solo se
+              mutan sus propiedades (por eso computeDerived() puede seguir
+              escribiendo en DATA.derived más abajo sin problema).
+           ================================================================ */
+        const DATA = {
+          gpu: {
+            label: 'RTX 4080 SUPER',
+            temp: 34, tempMax: 38, hotspot: 42, vramTemp: 43, tempLimit: 84,
+            coreClock: 915, coreClockMax: 2610,
+            boostCeiling: 2900,        // referencia para el gauge de reloj (no se muestra)
+            power: 50, powerMax: 139, powerLimit: 320, powerUsagePercent: 21,
+            voltage: 0.960, voltageMax: 0.960,
+            vramUsed: 4.77, vramTotal: 15.99
+          },
+          cpu: {
+            label: 'R7 9700X',
+            usagePercent: 10,
+            temp: 56, tempMax: 67,
+            power: 33, powerMax: 75, powerLimitStock: 88,
+            cores: [2365, 1727, 280, 469, 820, 416, 195, 202],
+            chipsetTemp: 56, chipsetTempMax: 57
+          },
+          ram: {
+            stick1: { temp: 43, tempMax: 43 },
+            stick2: { temp: 45, tempMax: 45 },
+            freq: 5800,
+            used: 25.14, total: 64
+          },
+          psu: { temp: 44, tempMax: 45 },
+          ssd: [
+            { label: 'SSD M.2: 970 EVO+', role: 'secondary', temp: 34, tempMax: 35, writePercent: 3, readPercent: 1 },
+            { label: 'SSD M.2: 990 PRO', role: 'primary', temp: 36, tempMax: 37, writePercent: 4, readPercent: 2 }
+          ],
+          rail12v: { current: 11.884, min: 11.788, max: 11.884 },
+          rail5v: { current: 5.02, min: 5.02, max: 5.06 },
+          // La fuente reporta estos con una cantidad de decimales inconsistente
+          // (típico de RTSS); se guardan como texto para reproducirlo tal cual.
+          rail3v: { current: '3.31', min: '3.296', max: '3.31' },
+          perf: {
+            api: 'D3D12',
+            frametime: 5.1,
+            fps: 300,
+            refreshHz: 159,
+            clock: '05:09:13 PM'
+          }
+        };
+        // Expuesto por si se quiere inspeccionar / actualizar desde la consola.
+        window.OVERLAY_DATA = DATA;
+
+        // Valores calculados a partir de DATA (porcentajes de gauge, etc).
+        // Se recalculan en cada render, así que si cambiás DATA siempre quedan al día.
+        const computeDerived = () => {
+          DATA.derived = {
+            gpuCoreClockPercent: Math.max(0, Math.min(100, Math.round(DATA.gpu.coreClock / DATA.gpu.boostCeiling * 100))),
+            ramUsagePercent: Math.round(DATA.ram.used / DATA.ram.total * 100)
+          };
+        };
+
+        /* ================================================================
+           2) TEXTO FIJO DE LA INTERFAZ (ES/EN), aparte de los tooltips.
+              Todo lo que ve la barra superior y la leyenda sale de acá.
+           ================================================================ */
+        const UI_STRINGS = {
+          en: {
+            intro: 'Hover (or Tab through) any value to see what that sensor measures.',
+            langLabel: 'Tooltip language:',
+            legendCyanName: 'Cyan', legendCyanDesc: '= current value',
+            legendYellowName: 'Yellow', legendYellowDesc: '= session maximum',
+            legendPinkName: 'Pink', legendPinkDesc: '= session minimum',
+            legendOrangeName: 'Orange', legendOrangeDesc: '= component name'
+          },
+          es: {
+            intro: 'Pasá el mouse (o navegá con Tab) sobre cualquier valor para ver qué mide ese sensor.',
+            langLabel: 'Idioma de tooltips:',
+            legendCyanName: 'Cian', legendCyanDesc: '= valor actual',
+            legendYellowName: 'Amarillo', legendYellowDesc: '= máximo de la sesión',
+            legendPinkName: 'Rosa', legendPinkDesc: '= mínimo de la sesión',
+            legendOrangeName: 'Naranja', legendOrangeDesc: '= nombre del componente'
+          }
+        };
+
+        /* ================================================================
+           3) TOOLTIPS. Cada clave devuelve texto ES/EN calculado a partir
+              de DATA, así que si cambian los valores el texto se ajusta solo.
+           ================================================================ */
+        const TOOLTIPS = {
+          gpuName: {
+            es: (d) => `Tu placa de video (GPU): NVIDIA GeForce ${d.gpu.label} con ${d.gpu.vramTotal} GB de VRAM. Todos los datos de este panel son de la GPU.`,
+            en: (d) => `Your graphics card (GPU): NVIDIA GeForce ${d.gpu.label} with ${d.gpu.vramTotal} GB of VRAM. Everything in this panel is GPU data.`
+          },
+          gpuTemp: {
+            es: (d) => `Temperatura actual del núcleo de la GPU: ${d.gpu.temp} °C. En juego exigente lo normal es 60–75 °C.`,
+            en: (d) => `Current GPU core temperature: ${d.gpu.temp} °C. In demanding games, 60–75 °C is typical.`
+          },
+          gpuTempMax: {
+            es: (d) => `Temperatura máxima que alcanzó la GPU en la sesión: ${d.gpu.tempMax} °C.`,
+            en: (d) => `Highest GPU temperature recorded this session: ${d.gpu.tempMax} °C.`
+          },
+          gpuHotspot: {
+            es: (d) => `Hot Spot: temperatura del punto más caliente del chip, ${d.gpu.hotspot} °C. Siempre es mayor que la del núcleo; una diferencia de 8–15 °C es normal.`,
+            en: (d) => `Hot Spot: hottest point on the die, ${d.gpu.hotspot} °C. Always higher than the core reading; an 8–15 °C gap is normal.`
+          },
+          gpuVramTemp: {
+            es: (d) => `Temperatura de la memoria VRAM (memory junction): ${d.gpu.vramTemp} °C. La GDDR6X puede operar con seguridad hasta ~95 °C.`,
+            en: (d) => `VRAM temperature (memory junction): ${d.gpu.vramTemp} °C. GDDR6X can safely run up to ~95 °C.`
+          },
+          gpuTempLimit: {
+            es: (d) => `Límite térmico (Temp Limit): ${d.gpu.tempLimit} °C, la temperatura a la que la GPU baja frecuencias para protegerse (throttling).`,
+            en: (d) => `Temp Limit: ${d.gpu.tempLimit} °C, the temperature at which the GPU lowers clocks to protect itself (throttling).`
+          },
+          gpuCoreGauge: {
+            es: (d) => `Medidor gráfico de la frecuencia del núcleo: ${d.gpu.coreClock} MHz, ≈${d.derived.gpuCoreClockPercent}% de un techo de boost típico (~${d.gpu.boostCeiling} MHz).`,
+            en: (d) => `Graphical gauge of the core clock: ${d.gpu.coreClock} MHz, ≈${d.derived.gpuCoreClockPercent}% of a typical boost ceiling (~${d.gpu.boostCeiling} MHz).`
+          },
+          gpuCoreClock: {
+            es: (d) => `Frecuencia actual del núcleo gráfico: ${d.gpu.coreClock} MHz.`,
+            en: (d) => `Current GPU core clock: ${d.gpu.coreClock} MHz.`
+          },
+          gpuCoreClockMax: {
+            es: (d) => `Frecuencia máxima del núcleo alcanzada en la sesión: ${d.gpu.coreClockMax} MHz.`,
+            en: (d) => `Maximum core clock reached this session: ${d.gpu.coreClockMax} MHz.`
+          },
+          gpuPowerIcon: {
+            es: () => 'Ícono de consumo eléctrico: los valores a la derecha son la potencia de la GPU.',
+            en: () => 'Power draw icon: the values to the right are the GPU\'s power consumption.'
+          },
+          gpuPower: {
+            es: (d) => `Consumo eléctrico actual de la placa de video: ${d.gpu.power} W.`,
+            en: (d) => `Current power draw of the graphics card: ${d.gpu.power} W.`
+          },
+          gpuPowerMax: {
+            es: (d) => `Consumo máximo registrado en la sesión: ${d.gpu.powerMax} W.`,
+            en: (d) => `Maximum power draw recorded this session: ${d.gpu.powerMax} W.`
+          },
+          gpuPowerUsage: {
+            es: (d) => `Porcentaje del límite de potencia (TDP) en uso. El límite de la tarjeta es ${d.gpu.powerLimit} W, así que ${d.gpu.powerUsagePercent}% ≈ ${Math.round(d.gpu.powerLimit * d.gpu.powerUsagePercent / 100)} W.`,
+            en: (d) => `Percentage of the power limit (TDP) in use. The card's limit is ${d.gpu.powerLimit} W, so ${d.gpu.powerUsagePercent}% ≈ ${Math.round(d.gpu.powerLimit * d.gpu.powerUsagePercent / 100)} W.`
+          },
+          gpuVoltage: {
+            es: (d) => `Voltaje actual aplicado al núcleo de la GPU: ${d.gpu.voltage.toFixed(3)} V. Sube y baja junto con la frecuencia.`,
+            en: (d) => `Current voltage applied to the GPU core: ${d.gpu.voltage.toFixed(3)} V. It scales with clock speed.`
+          },
+          gpuVoltageMax: {
+            es: (d) => `Voltaje máximo del núcleo registrado en la sesión: ${d.gpu.voltageMax.toFixed(3)} V.`,
+            en: (d) => `Maximum core voltage recorded this session: ${d.gpu.voltageMax.toFixed(3)} V.`
+          },
+          gpuVramUsed: {
+            es: (d) => `Memoria de video ocupada en este momento: ${d.gpu.vramUsed} GB (texturas, framebuffers, etc.).`,
+            en: (d) => `Video memory currently in use: ${d.gpu.vramUsed} GB (textures, framebuffers, etc.).`
+          },
+          gpuVramTotal: {
+            es: (d) => `Total de VRAM de la placa: ${d.gpu.vramTotal} GB.`,
+            en: (d) => `Total VRAM on the card: ${d.gpu.vramTotal} GB.`
+          },
+
+          cpuName: {
+            es: (d) => `Tu procesador (CPU): AMD ${d.cpu.label}, 8 núcleos / 16 hilos, arquitectura Zen 5.`,
+            en: (d) => `Your processor (CPU): AMD ${d.cpu.label}, 8 cores / 16 threads, Zen 5 architecture.`
+          },
+          cpuUsageGauge: {
+            es: (d) => `Medidor gráfico del uso del CPU: ${d.cpu.usagePercent}% en este momento.`,
+            en: (d) => `Graphical gauge of CPU usage: ${d.cpu.usagePercent}% right now.`
+          },
+          cpuUsagePercent: {
+            es: (d) => `Uso total del procesador, promediando todos los núcleos: ${d.cpu.usagePercent}%.`,
+            en: (d) => `Total CPU usage, averaged across all cores: ${d.cpu.usagePercent}%.`
+          },
+          cpuTemp: {
+            es: (d) => `Temperatura actual del procesador (Tctl/Tdie): ${d.cpu.temp} °C. El límite del 9700X es 95 °C.`,
+            en: (d) => `Current CPU temperature (Tctl/Tdie): ${d.cpu.temp} °C. The 9700X's limit is 95 °C.`
+          },
+          cpuTempMax: {
+            es: (d) => `Temperatura máxima del CPU registrada en la sesión: ${d.cpu.tempMax} °C.`,
+            en: (d) => `Maximum CPU temperature recorded this session: ${d.cpu.tempMax} °C.`
+          },
+          cpuPowerIcon: {
+            es: () => 'Ícono de consumo eléctrico: los valores a la derecha son la potencia del CPU.',
+            en: () => 'Power draw icon: the values to the right are the CPU\'s power consumption.'
+          },
+          cpuPower: {
+            es: (d) => `Consumo eléctrico actual del CPU (package power): ${d.cpu.power} W${d.cpu.power > d.cpu.powerLimitStock ? ` (por encima del PPT de fábrica de ${d.cpu.powerLimitStock} W)` : ''}.`,
+            en: (d) => `Current CPU power draw (package power): ${d.cpu.power} W${d.cpu.power > d.cpu.powerLimitStock ? ` (above the stock ${d.cpu.powerLimitStock} W PPT)` : ''}.`
+          },
+          cpuPowerMax: {
+            es: (d) => `Consumo máximo del CPU registrado en la sesión: ${d.cpu.powerMax} W.`,
+            en: (d) => `Maximum CPU power draw recorded this session: ${d.cpu.powerMax} W.`
+          },
+          chipsetLabel: {
+            es: () => 'Chipset de la placa madre (en AM5: B650/X670/X870). Maneja puertos USB, SATA y líneas PCIe extra.',
+            en: () => 'Motherboard chipset (on AM5: B650/X670/X870). It handles USB ports, SATA, and extra PCIe lanes.'
+          },
+          chipsetTemp: {
+            es: (d) => `Temperatura actual del chipset: ${d.cpu.chipsetTemp} °C. Suelen correr calientes (50–65 °C) por tener disipador pasivo.`,
+            en: (d) => `Current chipset temperature: ${d.cpu.chipsetTemp} °C. They usually run warm (50–65 °C) since most have a passive heatsink.`
+          },
+          chipsetTempMax: {
+            es: (d) => `Temperatura máxima del chipset en la sesión: ${d.cpu.chipsetTempMax} °C.`,
+            en: (d) => `Maximum chipset temperature this session: ${d.cpu.chipsetTempMax} °C.`
+          },
+
+          ramName: {
+            es: () => 'Memoria RAM del sistema: DDR5 en dos módulos.',
+            en: () => 'System RAM: DDR5 across two modules.'
+          },
+          ramGauge: {
+            es: (d) => `Medidor gráfico del uso de RAM: ${d.ram.used} de ${d.ram.total} GB ≈ ${d.derived.ramUsagePercent}% ocupado.`,
+            en: (d) => `Graphical gauge of RAM usage: ${d.ram.used} of ${d.ram.total} GB ≈ ${d.derived.ramUsagePercent}% in use.`
+          },
+          ramSlot1: {
+            es: () => 'Módulo de RAM n.º 1 (stick #1): el más alejado del cooler del CPU.',
+            en: () => 'RAM module #1 (stick #1): the one farther from the CPU cooler.'
+          },
+          ramSlot2: {
+            es: () => 'Módulo de RAM n.º 2 (stick #2): el más cercano al cooler del CPU, por eso suele reportar una temperatura un poco más alta.',
+            en: () => 'RAM module #2 (stick #2): the one closest to the CPU cooler, which is why it usually reads a bit warmer.'
+          },
+          ram1Temp: {
+            es: (d) => `Temperatura actual del módulo de RAM n.º 1: ${d.ram.stick1.temp} °C. Las DDR5 traen sensor propio.`,
+            en: (d) => `Current temperature of RAM stick #1: ${d.ram.stick1.temp} °C. DDR5 has a built-in sensor.`
+          },
+          ram1Max: {
+            es: (d) => `Máxima temperatura del módulo 1 en la sesión: ${d.ram.stick1.tempMax} °C.`,
+            en: (d) => `Maximum temperature of stick 1 this session: ${d.ram.stick1.tempMax} °C.`
+          },
+          ram2Temp: {
+            es: (d) => `Temperatura actual del módulo de RAM n.º 2: ${d.ram.stick2.temp} °C. Suele estar un poco más caliente por estar más cerca del cooler del CPU.`,
+            en: (d) => `Current temperature of RAM stick #2: ${d.ram.stick2.temp} °C. It often runs a bit warmer because it sits closer to the CPU cooler.`
+          },
+          ram2Max: {
+            es: (d) => `Máxima temperatura del módulo 2 en la sesión: ${d.ram.stick2.tempMax} °C.`,
+            en: (d) => `Maximum temperature of stick 2 this session: ${d.ram.stick2.tempMax} °C.`
+          },
+          ramFreq: {
+            es: (d) => `Frecuencia efectiva de la memoria: DDR5-${d.ram.freq} (MT/s). El reloj real es la mitad, porque DDR = Double Data Rate.`,
+            en: (d) => `Effective memory speed: DDR5-${d.ram.freq} (MT/s). The real clock is half that, because DDR = Double Data Rate.`
+          },
+          ramUsed: {
+            es: (d) => `RAM ocupada en este momento por Windows y los programas abiertos: ${d.ram.used} GB (≈ ${d.derived.ramUsagePercent}%).`,
+            en: (d) => `RAM currently used by Windows and open programs: ${d.ram.used} GB (≈ ${d.derived.ramUsagePercent}%).`
+          },
+          ramTotal: {
+            es: (d) => `Total de RAM instalada: ${d.ram.total} GB.`,
+            en: (d) => `Total installed RAM: ${d.ram.total} GB.`
+          },
+
+          psuLabel: {
+            es: () => 'Fuente de alimentación (PSU). Que reporte datos significa que es una fuente digital con monitoreo.',
+            en: () => 'Power supply (PSU). Reporting data means it\'s a digital PSU with monitoring.'
+          },
+          psuTemp: {
+            es: (d) => `Temperatura actual de la fuente: ${d.psu.temp} °C. Tomada desde un sensor probe puesto con cinta termica sobre la parte de atrás de la PSU`,
+            en: (d) => `Current  PSU temperature: ${d.psu.temp} °C. From a probe sensor taped over the back of the PSU.`
+          },
+          psuTempMax: {
+            es: (d) => `Temperatura máxima de la fuente en la sesión: ${d.psu.tempMax} °C.`,
+            en: (d) => `Maximum PSU temperature this session: ${d.psu.tempMax} °C.`
+          },
+
+          ssd0Name: {
+            es: (d) => `Tu ${d.ssd[0].role === 'primary' ? 'SSD principal' : 'segundo SSD'}: ${d.ssd[0].label.replace('SSD M.2: ', '')}.`,
+            en: (d) => `Your ${d.ssd[0].role === 'primary' ? 'main SSD' : 'second SSD'}: ${d.ssd[0].label.replace('SSD M.2: ', '')}.`
+          },
+          ssd0Temp: {
+            es: (d) => `Temperatura actual del disco: ${d.ssd[0].temp} °C. Los NVMe reducen velocidad (throttling) cerca de 70–80 °C.`,
+            en: (d) => `Current drive temperature: ${d.ssd[0].temp} °C. NVMe drives throttle around 70–80 °C.`
+          },
+          ssd0Max: {
+            es: (d) => `Temperatura máxima del disco en la sesión: ${d.ssd[0].tempMax} °C.`,
+            en: (d) => `Maximum drive temperature this session: ${d.ssd[0].tempMax} °C.`
+          },
+          ssd0Write: {
+            es: (d) => `Medidor de actividad de escritura: ${d.ssd[0].writePercent}% del tiempo escribiendo datos.`,
+            en: (d) => `Write activity gauge: ${d.ssd[0].writePercent}% of the time spent writing data.`
+          },
+          ssd0Read: {
+            es: (d) => `Medidor de actividad de lectura: ${d.ssd[0].readPercent}% del tiempo leyendo datos.`,
+            en: (d) => `Read activity gauge: ${d.ssd[0].readPercent}% of the time spent reading data.`
+          },
+          ssd1Name: {
+            es: (d) => `Tu ${d.ssd[1].role === 'primary' ? 'SSD principal' : 'segundo SSD'}: ${d.ssd[1].label.replace('SSD M.2: ', '')}.`,
+            en: (d) => `Your ${d.ssd[1].role === 'primary' ? 'main SSD' : 'second SSD'}: ${d.ssd[1].label.replace('SSD M.2: ', '')}.`
+          },
+          ssd1Temp: {
+            es: (d) => `Temperatura actual del disco: ${d.ssd[1].temp} °C. Los NVMe reducen velocidad (throttling) cerca de 70–80 °C.`,
+            en: (d) => `Current drive temperature: ${d.ssd[1].temp} °C. NVMe drives throttle around 70–80 °C.`
+          },
+          ssd1Max: {
+            es: (d) => `Temperatura máxima del disco en la sesión: ${d.ssd[1].tempMax} °C.`,
+            en: (d) => `Maximum drive temperature this session: ${d.ssd[1].tempMax} °C.`
+          },
+          ssd1Write: {
+            es: (d) => `Medidor de actividad de escritura: ${d.ssd[1].writePercent}% del tiempo escribiendo datos.`,
+            en: (d) => `Write activity gauge: ${d.ssd[1].writePercent}% of the time spent writing data.`
+          },
+          ssd1Read: {
+            es: (d) => `Medidor de actividad de lectura: ${d.ssd[1].readPercent}% del tiempo leyendo datos.`,
+            en: (d) => `Read activity gauge: ${d.ssd[1].readPercent}% of the time spent reading data.`
+          },
+
+          rail12vLabel: {
+            es: () => 'Línea de +12 V de la fuente: la más importante, alimenta CPU y GPU. Tolerancia ATX: ±5% (11.4–12.6 V).',
+            en: () => '+12 V rail of the PSU: the most important one, it powers the CPU and GPU. ATX tolerance: ±5% (11.4–12.6 V).'
+          },
+          rail12vCurrent: {
+            es: (d) => `Voltaje actual de la línea de 12 V: ${d.rail12v.current.toFixed(3)} V.`,
+            en: (d) => `Current 12 V rail voltage: ${d.rail12v.current.toFixed(3)} V.`
+          },
+          rail12vGraph: {
+            es: () => 'Mini gráfico de historial: traza cómo varió el voltaje de +12V a lo largo del tiempo. La marca vertical indica el punto donde se registró el valor mínimo de la sesión.',
+            en: () => 'Mini history graph: traces how the +12V voltage varied over time. The vertical mark shows where the session\'s minimum value was recorded.'
+          },
+          rail12vMin: {
+            es: (d) => `Voltaje mínimo de la sesión: ${d.rail12v.min.toFixed(3)} V, registrado en el pico de carga.`,
+            en: (d) => `Session minimum voltage: ${d.rail12v.min.toFixed(3)} V, recorded at peak load.`
+          },
+          rail12vMax: {
+            es: (d) => `Voltaje máximo de la sesión en la línea de 12 V: ${d.rail12v.max.toFixed(3)} V.`,
+            en: (d) => `Session maximum voltage on the 12 V rail: ${d.rail12v.max.toFixed(3)} V.`
+          },
+
+          rail5vLabel: {
+            es: () => 'Línea de +5 V: alimenta puertos USB, SATA y parte de la placa. Tolerancia ATX: ±5% (4.75–5.25 V).',
+            en: () => '+5 V rail: powers USB ports, SATA, and parts of the board. ATX tolerance: ±5% (4.75–5.25 V).'
+          },
+          rail5vCurrent: {
+            es: (d) => `Voltaje actual de la línea de 5 V: ${d.rail5v.current.toFixed(2)} V.`,
+            en: (d) => `Current 5 V rail voltage: ${d.rail5v.current.toFixed(2)} V.`
+          },
+          rail5vGraph: {
+            es: () => 'Mini gráfico de historial de la línea de 5 V a lo largo del tiempo.',
+            en: () => 'Mini history graph of the 5 V rail over time.'
+          },
+          rail5vMin: {
+            es: (d) => `Voltaje mínimo de la sesión en la línea de 5 V: ${d.rail5v.min.toFixed(2)} V.`,
+            en: (d) => `Session minimum voltage on the 5 V rail: ${d.rail5v.min.toFixed(2)} V.`
+          },
+          rail5vMax: {
+            es: (d) => `Voltaje máximo de la sesión en la línea de 5 V: ${d.rail5v.max.toFixed(2)} V.`,
+            en: (d) => `Session maximum voltage on the 5 V rail: ${d.rail5v.max.toFixed(2)} V.`
+          },
+
+          rail3vLabel: {
+            es: () => 'Línea de +3.3 V: alimenta principalmente la placa madre y ranuras M.2. Tolerancia ATX: ±5% (3.14–3.47 V).',
+            en: () => '+3.3 V rail: mainly powers the motherboard and M.2 slots. ATX tolerance: ±5% (3.14–3.47 V).'
+          },
+          rail3vCurrent: {
+            es: (d) => `Voltaje actual de la línea de 3.3 V: ${d.rail3v.current} V.`,
+            en: (d) => `Current 3.3 V rail voltage: ${d.rail3v.current} V.`
+          },
+          rail3vGraph: {
+            es: () => 'Mini gráfico de historial de la línea de 3.3 V a lo largo del tiempo.',
+            en: () => 'Mini history graph of the 3.3 V rail over time.'
+          },
+          rail3vMin: {
+            es: (d) => `Voltaje mínimo de la sesión en la línea de 3.3 V: ${d.rail3v.min} V.`,
+            en: (d) => `Session minimum voltage on the 3.3 V rail: ${d.rail3v.min} V.`
+          },
+          rail3vMax: {
+            es: (d) => `Voltaje máximo de la sesión en la línea de 3.3 V: ${d.rail3v.max} V. La cantidad de decimales varía porque así la reporta la fuente.`,
+            en: (d) => `Session maximum voltage on the 3.3 V rail: ${d.rail3v.max} V. The decimal precision varies because that's how the PSU reports it.`
+          },
+
+          apiLabel: {
+            es: (d) => `API gráfica que usa la aplicación monitoreada: ${d.perf.api}.`,
+            en: (d) => `Graphics API used by the monitored app: ${d.perf.api}.`
+          },
+          frametime: {
+            es: (d) => `Frametime: cuánto tarda en generarse cada cuadro, ${d.perf.frametime} ms.${d.perf.frametime > 50 ? ' Es muy alto: señal de un stutter (carga, compilación de shaders, o un cuelgue puntual del motor).' : ' Un frametime estable importa más que el número de FPS.'}`,
+            en: (d) => `Frametime: how long each frame takes to render, ${d.perf.frametime} ms.${d.perf.frametime > 50 ? ' That\'s very high: a sign of a stutter (loading, shader compilation, or a momentary engine hitch).' : ' A stable frametime matters more than the FPS number.'}`
+          },
+          fpsValue: {
+            es: (d) => {
+              const gpuLow = d.gpu.powerUsagePercent < 40;
+              const cpuLow = d.cpu.usagePercent < 40;
+              let verdict;
+              if (gpuLow && cpuLow) verdict = 'ninguno está saturado, así que el cuello de botella es otra cosa (carga de disco, compilación de shaders, o un cuelgue puntual del motor)';
+              else if (!gpuLow && cpuLow) verdict = 'esto pinta como un escenario limitado por GPU (GPU bound)';
+              else if (gpuLow && !cpuLow) verdict = 'esto pinta como un escenario limitado por CPU (CPU bound): el procesador no llega a alimentar más rápido a la GPU';
+              else verdict = 'tanto la GPU como el CPU están trabajando fuerte acá';
+              return `Cuadros por segundo que renderiza la aplicación: ${d.perf.fps} FPS. Con la GPU al ${d.gpu.powerUsagePercent}% de potencia y el CPU al ${d.cpu.usagePercent}% de uso, ${verdict}.`;
+            },
+            en: (d) => {
+              const gpuLow = d.gpu.powerUsagePercent < 40;
+              const cpuLow = d.cpu.usagePercent < 40;
+              let verdict;
+              if (gpuLow && cpuLow) verdict = 'neither is saturated, so the bottleneck is something else (disk loading, shader compilation, or a momentary engine hitch)';
+              else if (!gpuLow && cpuLow) verdict = 'this looks GPU-bound';
+              else if (gpuLow && !cpuLow) verdict = 'this looks CPU-bound: the processor can\'t feed the GPU any faster';
+              else verdict = 'both the GPU and CPU are working hard here';
+              return `Frames per second the app is rendering: ${d.perf.fps} FPS. With the GPU at ${d.gpu.powerUsagePercent}% power and the CPU at ${d.cpu.usagePercent}% usage, ${verdict}.`;
+            }
+          },
+          refreshHz: {
+            es: (d) => `Frecuencia de actualización del monitor: ${d.perf.refreshHz} Hz. Con ${d.perf.fps} FPS estás ${d.perf.fps < d.perf.refreshHz ? 'lejos del tope del monitor' : 'en o por encima del tope del monitor'} en esta escena.`,
+            en: (d) => `Monitor refresh rate: ${d.perf.refreshHz} Hz. At ${d.perf.fps} FPS you're ${d.perf.fps < d.perf.refreshHz ? 'well below the monitor\'s ceiling' : 'at or above the monitor\'s ceiling'} in this scene.`
+          },
+          clock: {
+            es: () => 'Hora actual del sistema. Útil para saber cuánto llevás jugando de un vistazo.',
+            en: () => 'Current system time. Handy for keeping track of how long you\'ve been playing.'
+          }
+        };
+
+        // Las 8 frecuencias de núcleo comparten la misma plantilla de tooltip;
+        // se generan en un loop. Ojo: usamos `let i` (no `var i`) a propósito:
+        // con `let`, cada vuelta del for crea una ligadura nueva de `i`, así que
+        // cada arrow function de abajo "recuerda" su propio número de núcleo.
+        // Con `var` todas las funciones terminarían compartiendo el mismo `i`
+        // final (el clásico bug de closures en loops) y las 8 tooltips dirían
+        // "núcleo 9". Este es el motivo real para preferir let sobre var.
+        for (let i = 1; i <= 8; i++) {
+          TOOLTIPS[`cpuCore${i}`] = {
+            es: (d) => `Frecuencia del núcleo ${i}: ${d.cpu.cores[i - 1]} MHz.`,
+            en: (d) => `Core ${i} clock speed: ${d.cpu.cores[i - 1]} MHz.`
+          };
+        }
+
+        /* ================================================================
+           4) MOTOR DE RENDERIZADO: título, texto fijo, valores, gauges
+              (SVG generado) y tooltips. Todas funciones flecha porque
+              ninguna necesita su propio `this`.
+           ================================================================ */
+        const getPath = (obj, path) =>
+          path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
+
+        const fmtValue = (v, spec) => {
+          if (v === undefined || v === null) return '';
+          if (spec === 'int') return String(Math.round(v));
+          if (spec === '1dec') return Number(v).toFixed(1);
+          if (spec === '2dec') return Number(v).toFixed(2);
+          if (spec === '3dec') return Number(v).toFixed(3);
+          return String(v);
+        };
+
+        const renderTitle = () => {
+          document.title = APP_TITLE;
+          const h1 = document.getElementById('appTitle');
+          if (!h1) return;
+          const idx = APP_TITLE.indexOf(':');
+          // Resalta el prefijo antes de ":" en naranja (mismo estilo que antes),
+          // usando la regla CSS "header h1 span" que ya existe.
+          h1.innerHTML = idx === -1
+            ? APP_TITLE
+            : `<span>${APP_TITLE.slice(0, idx)}</span>${APP_TITLE.slice(idx)}`;
+        };
+
+        const renderUIStrings = (lang) => {
+          const dict = UI_STRINGS[lang] || UI_STRINGS.en;
+          document.querySelectorAll('[data-i18n]').forEach((el) => {
+            const key = el.getAttribute('data-i18n');
+            if (dict[key] !== undefined) el.textContent = dict[key];
+          });
+        };
+
+        const renderValues = () => {
+          document.querySelectorAll('[data-bind]').forEach((el) => {
+            const raw = getPath(DATA, el.getAttribute('data-bind'));
+            const val = fmtValue(raw, el.getAttribute('data-fmt'));
+            const unit = el.getAttribute('data-unit');
+            const suffix = el.getAttribute('data-suffix');
+            el.innerHTML = val + (unit ? `<sup>${unit}</sup>` : '') + (suffix || '');
+          });
+        };
+
+        // ---- Gauges: arco + aguja generados a partir de un porcentaje ----
+        const polarToCartesian = (cx, cy, r, angleDeg) => {
+          const a = (angleDeg - 90) * Math.PI / 180;
+          return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+        };
+        const arcPath = (cx, cy, r, startAngle, endAngle) => {
+          const s = polarToCartesian(cx, cy, r, startAngle);
+          const e = polarToCartesian(cx, cy, r, endAngle);
+          const largeArc = (endAngle - startAngle) <= 180 ? 0 : 1;
+          return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
+        };
+        const gaugeSVG = (percent, color) => {
+          const cx = 20, cy = 20, r = 14, start = -135, sweep = 270, end = start + sweep;
+          const pct = Math.max(0, Math.min(100, Number(percent) || 0));
+          const valAngle = start + sweep * (pct / 100);
+          const track = arcPath(cx, cy, r, start, end);
+          const value = pct > 0.5 ? arcPath(cx, cy, r, start, valAngle) : '';
+          const needle = polarToCartesian(cx, cy, r - 1, valAngle);
+          return `<svg class="g-ico" viewBox="0 0 40 40" aria-hidden="true">
       <path d="${track}" fill="none" stroke="var(--gauge-track)" stroke-width="6" stroke-linecap="round"/>
       ${value ? `<path d="${value}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"/>` : ''}
       <line x1="${cx}" y1="${cy}" x2="${needle.x.toFixed(2)}" y2="${needle.y.toFixed(2)}" stroke="#000" stroke-opacity="0.55" stroke-width="4.5" stroke-linecap="round"/>
       <line x1="${cx}" y1="${cy}" x2="${needle.x.toFixed(2)}" y2="${needle.y.toFixed(2)}" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
     </svg>`;
-  };
-  const renderGauges = () => {
-    document.querySelectorAll('[data-gauge]').forEach((el) => {
-      const pct = getPath(DATA, el.getAttribute('data-gauge'));
-      const color = el.getAttribute('data-gauge-color') || 'var(--gauge-color)';
-      const small = el.querySelector('small');
-      el.innerHTML = gaugeSVG(pct, color) + (small ? small.outerHTML : '');
-    });
-  };
+        };
+        const renderGauges = () => {
+          document.querySelectorAll('[data-gauge]').forEach((el) => {
+            const pct = getPath(DATA, el.getAttribute('data-gauge'));
+            const color = el.getAttribute('data-gauge-color') || 'var(--gauge-color)';
+            const small = el.querySelector('small');
+            el.innerHTML = gaugeSVG(pct, color) + (small ? small.outerHTML : '');
+          });
+        };
 
-  const renderTooltips = (lang) => {
-    document.querySelectorAll('[data-tip-key]').forEach((el) => {
-      const entry = TOOLTIPS[el.getAttribute('data-tip-key')];
-      if (entry && entry[lang]) el.setAttribute('data-tip', entry[lang](DATA));
-    });
-  };
+        const renderTooltips = (lang) => {
+          document.querySelectorAll('[data-tip-key]').forEach((el) => {
+            const entry = TOOLTIPS[el.getAttribute('data-tip-key')];
+            if (entry && entry[lang]) el.setAttribute('data-tip', entry[lang](DATA));
+          });
+        };
 
-  /* ================================================================
-     5) IDIOMA: un solo punto de entrada que vuelve a pintar todo.
-     ================================================================ */
-  window.setLang = (lang) => {
-    computeDerived();
-    renderValues();
-    renderGauges();
-    renderTooltips(lang);
-    renderUIStrings(lang);
+        /* ================================================================
+           5) IDIOMA: un solo punto de entrada que vuelve a pintar todo.
+           ================================================================ */
+        window.setLang = (lang) => {
+          computeDerived();
+          renderValues();
+          renderGauges();
+          renderTooltips(lang);
+          renderUIStrings(lang);
 
-    const esBtn = document.getElementById('btn-es');
-    const enBtn = document.getElementById('btn-en');
-    if (esBtn) esBtn.classList.toggle('active', lang === 'es');
-    if (enBtn) enBtn.classList.toggle('active', lang === 'en');
+          const esBtn = document.getElementById('btn-es');
+          const enBtn = document.getElementById('btn-en');
+          if (esBtn) esBtn.classList.toggle('active', lang === 'es');
+          if (enBtn) enBtn.classList.toggle('active', lang === 'en');
 
-    try { localStorage.setItem('tipLang', lang); } catch (e) { /* private mode, ignore */ }
+          try { localStorage.setItem('tipLang', lang); } catch (e) { /* private mode, ignore */ }
 
-    requestFit();
-  };
+          requestFit();
+        };
 
-  // Vuelve a dibujar todo (valores + gauges + tooltips) sin tocar el
-  // idioma. Útil si se actualiza OVERLAY_DATA desde la consola.
-  window.renderOverlay = () => {
-    let lang = 'en';
-    try { lang = localStorage.getItem('tipLang') || 'en'; } catch (e) { /* ignore */ }
-    window.setLang(lang);
-  };
+        // Vuelve a dibujar todo (valores + gauges + tooltips) sin tocar el
+        // idioma. Útil si se actualiza OVERLAY_DATA desde la consola.
+        window.renderOverlay = () => {
+          let lang = 'en';
+          try { lang = localStorage.getItem('tipLang') || 'en'; } catch (e) { /* ignore */ }
+          window.setLang(lang);
+        };
 
-  /* ================================================================
-     6) Escalado del overlay: diseño fijo de 1200px, se escala como
-        un todo para entrar en la pantalla; solo se apila en columna
-        por debajo de 700px de ancho.
-     ================================================================ */
-  const DESIGN_W = 1200;
-  const STACK_BREAKPOINT = 700;
-  const stage = document.getElementById('stage');
-  const wrap = document.getElementById('stageWrap');
+        /* ================================================================
+           6) Escalado del overlay: diseño fijo de 1200px, se escala como
+              un todo para entrar en la pantalla; solo se apila en columna
+              por debajo de 700px de ancho.
+           ================================================================ */
+        const DESIGN_W = 1200;
+        const STACK_BREAKPOINT = 700;
+        const stage = document.getElementById('stage');
+        const wrap = document.getElementById('stageWrap');
+        const root = document.documentElement;
 
-  const fit = () => {
-    if (!stage || !wrap) return;
+        // El tooltip vive fuera del #stage escalado, así que no hereda su
+        // scale. Para que acompañe el tamaño del overlay (y no se vea chico
+        // en pantallas grandes/4K) reflejamos el mismo factor en --tip-k,
+        // acotado para que nunca quede ilegible ni gigante.
+        const setTipScale = (k) => {
+          root.style.setProperty('--tip-k', Math.max(0.9, Math.min(k, 2.6)).toFixed(3));
+        };
 
-    if (window.innerWidth <= STACK_BREAKPOINT) {
-      stage.classList.add('stack');
-      stage.style.transform = '';
-      stage.style.left = '';
-      wrap.style.height = 'auto';
-      return;
-    }
+        const fit = () => {
+          if (!stage || !wrap) return;
 
-    stage.classList.remove('stack');
-    stage.style.transform = 'none';
-    const designH = stage.offsetHeight;
+          if (window.innerWidth <= STACK_BREAKPOINT) {
+            stage.classList.add('stack');
+            stage.style.transform = '';
+            stage.style.left = '';
+            wrap.style.height = 'auto';
+            setTipScale(1);
+            return;
+          }
 
-    const availW = wrap.clientWidth;
-    let availH = window.innerHeight - wrap.getBoundingClientRect().top - 12;
-    if (availH < 100) availH = 100;
+          stage.classList.remove('stack');
+          stage.style.transform = 'none';
+          const designH = stage.offsetHeight;
 
-    const scale = Math.min(availW / DESIGN_W, availH / designH);
+          const availW = wrap.clientWidth;
+          let availH = window.innerHeight - wrap.getBoundingClientRect().top - 12;
+          if (availH < 100) availH = 100;
 
-    stage.style.transform = `scale(${scale})`;
-    stage.style.left = `${Math.max(0, (availW - DESIGN_W * scale) / 2)}px`;
-    wrap.style.height = `${designH * scale}px`;
-  };
+          const scale = Math.min(availW / DESIGN_W, availH / designH);
 
-  let raf = null;
-  const requestFit = () => {
-    if (raf) cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(fit);
-  };
+          stage.style.transform = `scale(${scale})`;
+          stage.style.left = `${Math.max(0, (availW - DESIGN_W * scale) / 2)}px`;
+          wrap.style.height = `${designH * scale}px`;
+          setTipScale(scale);
+        };
 
-  window.addEventListener('resize', requestFit);
-  window.addEventListener('load', fit);
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(fit).catch(() => {});
-  }
+        let raf = null;
+        const requestFit = () => {
+          if (raf) cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(fit);
+        };
 
-  /* ================================================================
-     7) Arranque.
-     ================================================================ */
-  renderTitle();
-  let savedLang = 'en';
-  try { savedLang = localStorage.getItem('tipLang') || 'en'; } catch (e) { /* ignore */ }
-  window.setLang(savedLang);
-  fit();
-})();
-</script>
+        window.addEventListener('resize', requestFit);
+        window.addEventListener('load', fit);
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(fit).catch(() => { });
+        }
+
+        /* ================================================================
+           6b) Tooltip flotante. Un ÚNICO elemento fijo, agregado al <body>
+               (fuera del #stage escalado), posicionado por JS a partir del
+               rect del elemento apuntado y recortado al viewport.
+               Resuelve dos cosas que el tooltip de CSS puro no podía:
+                 1) Siempre queda por encima de todo (incluidos los núcleos
+                    del CPU, que antes quedaban tapados por paneles vecinos).
+                 2) Nunca se sale de la pantalla: se centra en el elemento
+                    pero se recorta a los bordes visibles.
+           ================================================================ */
+        const tip = document.createElement('div');
+        tip.id = 'tip';
+        tip.innerHTML = '<span class="tip-text"></span><span class="caret"></span>';
+        document.body.appendChild(tip);
+        const tipTextEl = tip.querySelector('.tip-text');
+        const caretEl = tip.querySelector('.caret');
+        let tipTarget = null;
+
+        const placeTip = () => {
+          if (!tipTarget) return;
+          const r = tipTarget.getBoundingClientRect();
+          const gap = 10, margin = 8;
+          const tw = tip.offsetWidth, th = tip.offsetHeight;
+
+          // Vertical: arriba si entra; si no, abajo.
+          const above = r.top - gap - th >= margin;
+          tip.classList.toggle('above', above);
+          tip.classList.toggle('below', !above);
+          let top = above ? r.top - gap - th : r.bottom + gap;
+          top = Math.max(margin, Math.min(top, window.innerHeight - th - margin));
+
+          // Horizontal: centrado en el elemento, recortado al viewport.
+          const cx = r.left + r.width / 2;
+          let left = cx - tw / 2;
+          left = Math.max(margin, Math.min(left, window.innerWidth - tw - margin));
+
+          tip.style.left = `${Math.round(left)}px`;
+          tip.style.top = `${Math.round(top)}px`;
+
+          // La flecha apunta al centro del elemento, sin salirse del tooltip.
+          const caretX = Math.max(10, Math.min(cx - left, tw - 10));
+          caretEl.style.left = `${Math.round(caretX)}px`;
+        };
+
+        const showTip = (el) => {
+          const text = el.getAttribute('data-tip');
+          if (!text) return;
+          tipTarget = el;
+          tipTextEl.textContent = text;
+          tip.classList.add('show');
+          placeTip();
+        };
+        const hideTip = () => {
+          tipTarget = null;
+          tip.classList.remove('show');
+        };
+
+        const TIP_SEL = '[data-tip]';
+        document.addEventListener('mouseover', (e) => {
+          const el = e.target.closest && e.target.closest(TIP_SEL);
+          if (el) showTip(el);
+        });
+        document.addEventListener('mouseout', (e) => {
+          const el = e.target.closest && e.target.closest(TIP_SEL);
+          // Ignorar movimientos hacia un hijo del mismo elemento (p. ej. <sup>).
+          if (el && el === tipTarget && !el.contains(e.relatedTarget)) hideTip();
+        });
+        document.addEventListener('focusin', (e) => {
+          const el = e.target.closest && e.target.closest(TIP_SEL);
+          if (el) showTip(el);
+        });
+        document.addEventListener('focusout', (e) => {
+          if (tipTarget && e.target === tipTarget) hideTip();
+        });
+        window.addEventListener('scroll', () => { if (tipTarget) placeTip(); }, true);
+        window.addEventListener('resize', () => { if (tipTarget) placeTip(); });
+
+        /* ================================================================
+           7) Arranque.
+           ================================================================ */
+        renderTitle();
+        let savedLang = 'en';
+        try { savedLang = localStorage.getItem('tipLang') || 'en'; } catch (e) { /* ignore */ }
+        window.setLang(savedLang);
+        fit();
+      })();
+    </script>
 
 
-</body>
+  </body>
+
 </html>
