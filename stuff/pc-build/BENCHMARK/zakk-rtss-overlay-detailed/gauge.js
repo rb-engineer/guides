@@ -23,6 +23,7 @@ export const gaugeSVG = (percent, color) => {
   return `<svg class="g-ico" viewBox="0 0 40 40" aria-hidden="true">
     <path d="${track}" fill="none" stroke="var(--gauge-track)" stroke-width="6" stroke-linecap="round"/>
     ${value ? `<path d="${value}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"/>` : ''}
+    <line x1="${cx}" y1="${cy}" x2="${needle.x.toFixed(2)}" y2="${needle.y.toFixed(2)}" stroke="#000" stroke-opacity="0.55" stroke-width="4.5" stroke-linecap="round"/>
     <line x1="${cx}" y1="${cy}" x2="${needle.x.toFixed(2)}" y2="${needle.y.toFixed(2)}" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
   </svg>`;
 };

@@ -7,6 +7,15 @@ const DESIGN_W = 1200;
 const STACK_BREAKPOINT = 700;
 const stage = document.getElementById('stage');
 const wrap = document.getElementById('stageWrap');
+const root = document.documentElement;
+
+// El tooltip vive fuera del #stage escalado, así que no hereda su
+// scale. Para que acompañe el tamaño del overlay (y no se vea chico
+// en pantallas grandes/4K) reflejamos el mismo factor en --tip-k,
+// acotado para que nunca quede ilegible ni gigante.
+const setTipScale = (k) => {
+  root.style.setProperty('--tip-k', Math.max(0.9, Math.min(k, 2.6)).toFixed(3));
+};
 
 export const fit = () => {
   if (!stage || !wrap) return;
@@ -16,6 +25,7 @@ export const fit = () => {
     stage.style.transform = '';
     stage.style.left = '';
     wrap.style.height = 'auto';
+    setTipScale(1);
     return;
   }
 
@@ -32,6 +42,7 @@ export const fit = () => {
   stage.style.transform = `scale(${scale})`;
   stage.style.left = `${Math.max(0, (availW - DESIGN_W * scale) / 2)}px`;
   wrap.style.height = `${designH * scale}px`;
+  setTipScale(scale);
 };
 
 let raf = null;
