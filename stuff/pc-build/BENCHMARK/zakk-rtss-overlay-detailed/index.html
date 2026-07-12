@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAKK: Overlay RTSS DETAILED</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1 id="appTitle">ZAKK: Overlay RTSS DETAILED</h1>
+  <p id="intro" data-i18n="intro">Hover (or Tab through) any value to see what that sensor measures.</p>
+  <div class="lang" role="group" aria-label="Tooltip language">
+    <span id="langLabel" data-i18n="langLabel">Tooltip language:</span>
+    <button id="btn-es" type="button" onclick="setLang('es')">ES</button>
+    <button id="btn-en" class="active" type="button" onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<div class="legend">
+  <span><span class="sw" style="background:var(--cyan)"></span><b style="color:var(--cyan)" data-i18n="legendCyanName">Cyan</b> <span data-i18n="legendCyanDesc">= current value</span></span>
+  <span><span class="sw" style="background:var(--yellow)"></span><b style="color:var(--yellow)" data-i18n="legendYellowName">Yellow</b> <span data-i18n="legendYellowDesc">= session maximum</span></span>
+  <span><span class="sw" style="background:var(--pink)"></span><b style="color:var(--pink)" data-i18n="legendPinkName">Pink</b> <span data-i18n="legendPinkDesc">= session minimum</span></span>
+  <span><span class="sw" style="background:var(--orange)"></span><b style="color:var(--orange)" data-i18n="legendOrangeName">Orange</b> <span data-i18n="legendOrangeDesc">= component name</span></span>
+</div>
+
+<div id="stageWrap">
+<div id="stage">
+
+  <!-- ===================== GPU ===================== -->
+  <section class="panel gpu">
+    <h2><span class="s tl w" style="color:var(--orange)" data-bind="gpu.label" data-tip-key="gpuName">RTX 4080 SUPER</span></h2>
+    <div class="row">
+      <span class="s tl c" data-bind="gpu.temp" data-fmt="int" data-unit="°C" data-tip-key="gpuTemp">34<sup>°C</sup></span>
+      <span class="lbl-max">Max:</span>
+      <span class="s y" data-bind="gpu.tempMax" data-fmt="int" data-unit="°C" data-tip-key="gpuTempMax">38<sup>°C</sup></span>
+      <span class="s c" data-bind="gpu.hotspot" data-fmt="int" data-unit="°C" data-tip-key="gpuHotspot">42<sup>°C</sup></span>
+      <span class="s c" data-bind="gpu.vramTemp" data-fmt="int" data-unit="°C" data-tip-key="gpuVramTemp">43<sup>°C</sup></span>
+      <span class="s c" data-bind="gpu.tempLimit" data-fmt="int" data-unit="°C" data-tip-key="gpuTempLimit">84<sup>°C</sup></span>
+    </div>
+    <div class="row">
+      <span class="lbl">Core:</span>
+      <span class="s nb" data-gauge="derived.gpuCoreClockPercent" data-gauge-color="var(--gauge-color)" data-tip-key="gpuCoreGauge"></span>
+      <span class="s c" data-bind="gpu.coreClock" data-fmt="int" data-unit="MHz" data-tip-key="gpuCoreClock">915<sup>MHz</sup></span>
+      <span class="s y" data-bind="gpu.coreClockMax" data-fmt="int" data-unit="MHz" data-tip-key="gpuCoreClockMax">2610<sup>MHz</sup></span>
+    </div>
+    <div class="row">
+      <span class="s nb tl" data-tip-key="gpuPowerIcon">
+        <svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L5 14 h6 l-2 8 8-12 h-6 z" fill="#fff"/></svg>
+      </span>
+      <span class="s c" data-bind="gpu.power" data-fmt="int" data-unit="W" data-tip-key="gpuPower">50<sup>W</sup></span>
+      <span class="s y" data-bind="gpu.powerMax" data-fmt="int" data-unit="W" data-tip-key="gpuPowerMax">139<sup>W</sup></span>
+      <span class="lbl">Power Usage:</span>
+      <span class="s c" data-bind="gpu.powerUsagePercent" data-fmt="int" data-unit="%" data-tip-key="gpuPowerUsage">21<sup>%</sup></span>
+    </div>
+    <div class="row">
+      <span class="lbl">Core Voltage:</span>
+      <span class="s c" data-bind="gpu.voltage" data-fmt="3dec" data-unit="V" data-tip-key="gpuVoltage">0.960<sup>V</sup></span>
+      <span class="s y" data-bind="gpu.voltageMax" data-fmt="3dec" data-unit="V" data-tip-key="gpuVoltageMax">0.960<sup>V</sup></span>
+    </div>
+    <div class="row">
+      <span class="lbl">VRAM Usage:</span>
+      <span class="s c" data-bind="gpu.vramUsed" data-fmt="2dec" data-unit="GB" data-tip-key="gpuVramUsed">4.77<sup>GB</sup></span>
+      <span class="lbl">/</span>
+      <span class="s c" data-bind="gpu.vramTotal" data-fmt="2dec" data-unit="GB" data-tip-key="gpuVramTotal">15.99<sup>GB</sup></span>
+    </div>
+  </section>
+
+  <!-- ===================== CPU ===================== -->
+  <section class="panel cpu">
+    <h2><span class="s tl w" style="color:var(--orange)" data-bind="cpu.label" data-tip-key="cpuName">R7 9700X</span>
+      <span class="s nb" data-gauge="cpu.usagePercent" data-gauge-color="var(--gauge-color)" data-tip-key="cpuUsageGauge"></span>
+      <span class="s tr c" style="font-size:0.85em" data-bind="cpu.usagePercent" data-fmt="int" data-unit="%" data-tip-key="cpuUsagePercent">10<sup>%</sup></span>
+    </h2>
+    <div class="row">
+      <span class="s tl c" data-bind="cpu.temp" data-fmt="int" data-unit="°C" data-tip-key="cpuTemp">56<sup>°C</sup></span>
+      <span class="lbl-max">Max:</span>
+      <span class="s y" data-bind="cpu.tempMax" data-fmt="int" data-unit="°C" data-tip-key="cpuTempMax">67<sup>°C</sup></span>
+    </div>
+    <div class="row">
+      <span class="s nb tl" data-tip-key="cpuPowerIcon">
+        <svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L5 14 h6 l-2 8 8-12 h-6 z" fill="#fff"/></svg>
+      </span>
+      <span class="s c" data-bind="cpu.power" data-fmt="int" data-unit="W" data-tip-key="cpuPower">33<sup>W</sup></span>
+      <span class="s y" data-bind="cpu.powerMax" data-fmt="int" data-unit="W" data-tip-key="cpuPowerMax">75<sup>W</sup></span>
+    </div>
+    <div class="row cores">
+      <span class="s tl w" data-bind="cpu.cores.0" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore1">2365<sup>MHz</sup></span>
+      <span class="s w" data-bind="cpu.cores.1" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore2">1727<sup>MHz</sup></span>
+      <span class="s w" data-bind="cpu.cores.2" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore3">280<sup>MHz</sup></span>
+      <span class="s w" data-bind="cpu.cores.3" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore4">469<sup>MHz</sup></span>
+      <span class="s w" data-bind="cpu.cores.4" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore5">820<sup>MHz</sup></span>
+      <span class="s w" data-bind="cpu.cores.5" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore6">416<sup>MHz</sup></span>
+      <span class="s w" data-bind="cpu.cores.6" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore7">195<sup>MHz</sup></span>
+      <span class="s tr w" data-bind="cpu.cores.7" data-fmt="int" data-unit="MHz" data-tip-key="cpuCore8">202<sup>MHz</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl o" data-tip-key="chipsetLabel">CHIPSET</span>
+      <span class="s c" data-bind="cpu.chipsetTemp" data-fmt="int" data-unit="°C" data-tip-key="chipsetTemp">56<sup>°C</sup></span>
+      <span class="s y" data-bind="cpu.chipsetTempMax" data-fmt="int" data-unit="°C" data-tip-key="chipsetTempMax">57<sup>°C</sup></span>
+    </div>
+  </section>
+
+  <!-- ===================== RAM ===================== -->
+  <section class="panel ram">
+    <h2><span class="s tl w" style="color:var(--orange)" data-tip-key="ramName">RAM</span>
+      <span class="s nb" data-gauge="derived.ramUsagePercent" data-gauge-color="var(--gauge-color)" data-tip-key="ramGauge"></span>
+    </h2>
+    <div class="row">
+      <span class="lbl">#1</span>
+      <span class="s c" data-bind="ram.stick1.temp" data-fmt="int" data-unit="°C" data-tip-key="ram1Temp">43<sup>°C</sup></span>
+      <span class="s y" data-bind="ram.stick1.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ram1Max">43<sup>°C</sup></span>
+    </div>
+    <div class="row">
+      <span class="lbl">#2</span>
+      <span class="s c" data-bind="ram.stick2.temp" data-fmt="int" data-unit="°C" data-tip-key="ram2Temp">45<sup>°C</sup></span>
+      <span class="s y" data-bind="ram.stick2.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ram2Max">45<sup>°C</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl c" data-bind="ram.freq" data-fmt="int" data-unit="MHz" data-tip-key="ramFreq">5800<sup>MHz</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl c" data-bind="ram.used" data-fmt="2dec" data-unit="GB" data-tip-key="ramUsed">25.14<sup>GB</sup></span>
+      <span class="lbl">/</span>
+      <span class="s c" data-bind="ram.total" data-fmt="int" data-unit="GB" data-tip-key="ramTotal">64<sup>GB</sup></span>
+    </div>
+  </section>
+
+  <!-- ===================== SSDs / +12V / +5V / +3V / PSU ===================== -->
+  <section class="panel store">
+    <div class="ssds">
+      <div class="ssd">
+        <div class="disk"><span class="s tl" data-bind="ssd.0.label" data-tip-key="ssd0Name">SSD M.2: 970 EVO+</span></div>
+        <div class="row">
+          <span class="s tl c" data-bind="ssd.0.temp" data-fmt="int" data-unit="°C" data-tip-key="ssd0Temp">34<sup>°C</sup></span>
+          <span class="s y" data-bind="ssd.0.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ssd0Max">35<sup>°C</sup></span>
+          <span class="s nb wr" data-gauge="ssd.0.writePercent" data-gauge-color="var(--gauge-color)" data-tip-key="ssd0Write"><small>Write</small></span>
+          <span class="s nb wr" data-gauge="ssd.0.readPercent" data-gauge-color="var(--gauge-color)" data-tip-key="ssd0Read"><small>Read</small></span>
+        </div>
+      </div>
+      <div class="ssd">
+        <div class="disk"><span class="s tl" data-bind="ssd.1.label" data-tip-key="ssd1Name">SSD M.2: 990 PRO</span></div>
+        <div class="row">
+          <span class="s tl c" data-bind="ssd.1.temp" data-fmt="int" data-unit="°C" data-tip-key="ssd1Temp">36<sup>°C</sup></span>
+          <span class="s y" data-bind="ssd.1.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ssd1Max">37<sup>°C</sup></span>
+          <span class="s nb wr" data-gauge="ssd.1.writePercent" data-gauge-color="var(--gauge-color)" data-tip-key="ssd1Write"><small>Write</small></span>
+          <span class="s nb wr tr" data-gauge="ssd.1.readPercent" data-gauge-color="var(--gauge-color)" data-tip-key="ssd1Read"><small>Read</small></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <span class="s tl o" data-tip-key="rail12vLabel">+12V</span>
+      <span class="s c" data-bind="rail12v.current" data-fmt="3dec" data-unit="V" data-tip-key="rail12vCurrent">11.884<sup>V</sup></span>
+      <span class="volt-graph" tabindex="0" data-tip-key="rail12vGraph"><span class="tick"></span></span>
+      <span class="s p" data-bind="rail12v.min" data-fmt="3dec" data-unit="V" data-tip-key="rail12vMin">11.788<sup>V</sup></span>
+      <span class="s tr y" data-bind="rail12v.max" data-fmt="3dec" data-unit="V" data-tip-key="rail12vMax">11.884<sup>V</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl o" data-tip-key="rail5vLabel">+5V</span>
+      <span class="s c" data-bind="rail5v.current" data-fmt="2dec" data-unit="V" data-tip-key="rail5vCurrent">5.02<sup>V</sup></span>
+      <span class="volt-graph" tabindex="0" data-tip-key="rail5vGraph"><span class="tick"></span></span>
+      <span class="s p" data-bind="rail5v.min" data-fmt="2dec" data-unit="V" data-tip-key="rail5vMin">5.02<sup>V</sup></span>
+      <span class="s tr y" data-bind="rail5v.max" data-fmt="2dec" data-unit="V" data-tip-key="rail5vMax">5.06<sup>V</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl o" data-tip-key="rail3vLabel">+3V</span>
+      <span class="s c" data-bind="rail3v.current" data-unit="V" data-tip-key="rail3vCurrent">3.31<sup>V</sup></span>
+      <span class="volt-graph" tabindex="0" data-tip-key="rail3vGraph"><span class="tick"></span></span>
+      <span class="s p" data-bind="rail3v.min" data-unit="V" data-tip-key="rail3vMin">3.296<sup>V</sup></span>
+      <span class="s tr y" data-bind="rail3v.max" data-unit="V" data-tip-key="rail3vMax">3.312000<sup>V</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl o" data-tip-key="psuLabel">PSU</span>
+      <span class="s c" data-bind="psu.temp" data-fmt="int" data-unit="°C" data-tip-key="psuTemp">44<sup>°C</sup></span>
+      <span class="s y" data-bind="psu.tempMax" data-fmt="int" data-unit="°C" data-tip-key="psuTempMax">45<sup>°C</sup></span>
+    </div>
+  </section>
+
+  <!-- ===================== FPS / REFRESCO / RELOJ ===================== -->
+  <section class="panel fps">
+    <div class="row">
+      <span class="s tl g" data-bind="perf.api" data-tip-key="apiLabel">OGL</span>
+      <span class="s w" data-bind="perf.frametime" data-fmt="1dec" data-unit="ms" data-tip-key="frametime">999.6<sup>ms</sup></span>
+    </div>
+    <div class="row big">
+      <span class="s tl w" data-bind="perf.fps" data-fmt="int" data-suffix=" FPS" data-tip-key="fpsValue">1 FPS</span>
+    </div>
+    <div class="row hz">
+      <span class="s tl w" data-bind="perf.refreshHz" data-fmt="int" data-unit="Hz" data-tip-key="refreshHz">140<sup>Hz</sup></span>
+    </div>
+    <div class="clock"><span class="s tl c" data-bind="perf.clock" data-tip-key="clock">05:09:13 PM</span></div>
+  </section>
+
+</div><!-- /#stage -->
+</div><!-- /#stageWrap -->
+
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>

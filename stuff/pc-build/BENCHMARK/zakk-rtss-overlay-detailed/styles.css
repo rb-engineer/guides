@@ -1,0 +1,203 @@
+  :root{
+    --bg:#0a0a0f;
+    --cyan:#39c2f5;      /* valor actual */
+    --yellow:#f5e13a;    /* máximo de sesión */
+    --pink:#f0a0c8;      /* lectura mínima */
+    --orange:#f5821f;    /* títulos de panel */
+    --green:#08CD08;     /* nombres de discos SSD */
+    --lime:#AEEA00;      /* API gráfica */
+    --gauge-color:#00F0FF; /* color de todos los gauges (arco + aguja) */
+    --white:#f2f2f2;
+    --label:#e8e8e8;
+    --gauge-track:#123f4e;
+    --tip-bg:#16161f;
+    --tip-border:#39c2f5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{height:100%}
+  body{
+    min-height:100%;
+    background:var(--bg);
+    color:var(--white);
+    font-family:'Chakra Petch',system-ui,sans-serif;
+    display:flex;flex-direction:column;
+    padding:12px 16px;
+    overflow-x:hidden;
+    background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:28px 28px;
+  }
+
+  /* ---------- Barra superior (fuera del overlay, no escala) ---------- */
+  header{
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;
+    width:100%;margin-bottom:10px;
+  }
+  header h1{font-size:20px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+  header h1 span{color:var(--orange)}
+  header p{font-family:'IBM Plex Sans',sans-serif;color:#b8b8c4;font-size:13px;flex:1 1 240px;min-width:200px}
+  .lang{
+    margin-left:auto;display:flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:#9a9aa8;
+  }
+  .lang button{
+    font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;
+    background:#101018;color:#c8c8d2;border:1px solid #2c2c38;border-radius:5px;
+    padding:6px 14px;cursor:pointer;transition:all .15s ease;
+  }
+  .lang button:hover{border-color:var(--cyan);color:#fff}
+  .lang button.active{background:var(--cyan);border-color:var(--cyan);color:#04141c}
+  .lang button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+  .legend{
+    width:100%;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px 22px;
+    font-size:12px;font-family:'IBM Plex Sans',sans-serif;color:#c8c8d2;
+    border:1px solid #26262f;padding:7px 12px;border-radius:6px;background:#101018;
+  }
+  .legend b{font-family:'Chakra Petch',sans-serif}
+  .legend .sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+  /* ---------- Escenario del overlay ----------
+     El overlay se diseña a un tamaño FIJO de 1200px de ancho, con
+     posiciones y tipografía estáticas (como el overlay real).
+     JS lo escala como un todo (transform: scale) para que entre en
+     la pantalla, sin mover ningún bloque de lugar. */
+  #stageWrap{position:relative;flex:1;width:100%}
+  #stage{
+    position:absolute;top:0;left:0;
+    width:1200px;
+    font-size:20px;             /* tamaño base del diseño: todo deriva de acá */
+    transform-origin:top left;
+    display:grid;gap:4px;
+    grid-template-columns:360px 380px 460px;
+    grid-template-rows:auto auto 1fr;
+    grid-template-areas:
+      "gpu gpu cpu"
+      "ram store store"
+      "fps store store";
+  }
+
+  .panel{padding:14px 18px;border-radius:4px;min-width:0}
+  .panel h2{
+    color:var(--orange);font-size:1.3em;letter-spacing:.05em;margin-bottom:8px;
+    display:flex;align-items:center;gap:12px;
+  }
+  .gpu{grid-area:gpu;background:#3a2e05}
+  .cpu{grid-area:cpu;background:#0b2838}
+  .ram{grid-area:ram;background:#1e0f33}
+  .store{grid-area:store;background:#1e0e03}
+  .fps{grid-area:fps;background:#0d0d0d;display:flex;flex-direction:column}
+
+  .row{display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px;margin:8px 0;font-size:1.05em}
+  .lbl{color:var(--label);font-weight:600}
+  .lbl-max{color:var(--yellow);font-weight:600}
+  .disk{color:var(--green);font-size:1.05em;font-weight:700;letter-spacing:.04em}
+  .cores{font-size:0.85em}
+  .spacer{flex:1}
+
+  /* SSDs lado a lado */
+  .ssds{display:flex;gap:14px;align-items:flex-start;margin:8px 0}
+  .ssd{flex:0 0 auto;min-width:0}
+
+  /* ---------- Iconos de gauge (medidores) y bolt ---------- */
+  .g-ico{width:1.15em;height:1.15em;display:inline-block;vertical-align:-0.2em;flex:none}
+  .wr{display:inline-flex;flex-direction:column;align-items:center;line-height:1}
+  .wr small{font-size:0.5em;font-weight:600;color:#fff;margin-top:2px}
+  .bolt{width:0.9em;height:0.9em;display:inline-block;vertical-align:-0.1em;flex:none}
+
+  /* ---------- Sensores con tooltip ---------- */
+  .s{
+    position:relative;cursor:help;font-weight:700;
+    border-bottom:1px dotted rgba(255,255,255,.45);
+    outline:none;
+  }
+  .s.nb{border-bottom:none}
+  .s sup{font-size:.55em;font-weight:600;margin-left:1px}
+  .c{color:var(--cyan)} .y{color:var(--yellow)} .p{color:var(--pink)}
+  .w{color:var(--white)} .g{color:var(--lime)} .o{color:var(--orange)}
+  .s:hover,.s:focus-visible{filter:brightness(1.25);border-bottom-color:#fff}
+
+  .s::after{
+    content:attr(data-tip);
+    position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(4px);
+    width:max-content;max-width:300px;
+    background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:6px;
+    padding:9px 12px;
+    font-family:'IBM Plex Sans',sans-serif;font-size:0.68em;font-weight:400;line-height:1.45;
+    color:#e8e8ee;text-transform:none;letter-spacing:0;
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .15s ease,transform .15s ease;
+    z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.6);
+  }
+  .s::before{
+    content:"";position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);
+    border:6px solid transparent;border-top-color:var(--tip-border);
+    opacity:0;visibility:hidden;transition:opacity .15s ease;z-index:20;
+  }
+  .s:hover::after,.s:focus-visible::after{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+  .s:hover::before,.s:focus-visible::before{opacity:1;visibility:visible}
+  /* variantes para bordes del escenario */
+  .tl::after{left:0;transform:translateX(0) translateY(4px)}
+  .tl:hover::after,.tl:focus-visible::after{transform:translateX(0) translateY(0)}
+  .tl::before{left:14px}
+  .tr::after{left:auto;right:0;transform:translateX(0) translateY(4px)}
+  .tr:hover::after,.tr:focus-visible::after{transform:translateX(0) translateY(0)}
+  .tr::before{left:auto;right:14px;transform:none}
+  /* la fila de núcleos usa tooltips debajo para no tapar el título */
+  .cores .s::after{bottom:auto;top:calc(100% + 10px);transform:translateX(-50%) translateY(-4px)}
+  .cores .s::before{bottom:auto;top:calc(100% + 4px);border-top-color:transparent;border-bottom-color:var(--tip-border)}
+  .cores .s:hover::after,.cores .s:focus-visible::after{transform:translateX(-50%) translateY(0)}
+  .cores .s.tl::after{left:0;transform:translateX(0) translateY(-4px)}
+  .cores .s.tl:hover::after,.cores .s.tl:focus-visible::after{transform:translateX(0) translateY(0)}
+  .cores .s.tr::after{left:auto;right:0;transform:translateX(0) translateY(-4px)}
+  .cores .s.tr:hover::after,.cores .s.tr:focus-visible::after{transform:translateX(0) translateY(0)}
+
+  .fps .big{font-size:2.4em;letter-spacing:.03em;margin:2px 0}
+  .hz{font-size:1.05em;margin-top:auto;padding-top:1.6em}
+  .clock{color:var(--cyan);font-size:1.35em;font-weight:700;margin-top:6px}
+
+  /* ---------- Mini gráfico de historial (línea +12V) ---------- */
+  .volt-graph{
+    flex:1;min-width:40px;height:16px;position:relative;
+    display:flex;align-items:center;margin:0 6px;cursor:help;
+  }
+  .volt-graph::before{
+    content:"";position:absolute;left:0;right:0;top:50%;height:2px;
+    background:var(--cyan);opacity:.55;transform:translateY(-50%);
+  }
+  .volt-graph .tick{
+    position:absolute;left:52%;top:0;bottom:0;width:1px;background:var(--cyan);opacity:.8;
+  }
+  .volt-graph::after{
+    content:attr(data-tip);
+    position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(4px);
+    width:max-content;max-width:280px;
+    background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:6px;
+    padding:9px 12px;
+    font-family:'IBM Plex Sans',sans-serif;font-size:0.68em;font-weight:400;line-height:1.45;
+    color:#e8e8ee;text-transform:none;letter-spacing:0;
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .15s ease,transform .15s ease;
+    z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.6);
+  }
+  .volt-graph:hover::after,.volt-graph:focus-visible::after{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+
+  /* ---------- Modo apilado: solo cuando la pantalla no puede
+     contener el layout (muy angosta). Los bloques pasan a una
+     columna; es el único caso en que se mueven de lugar. ---------- */
+  #stage.stack{
+    position:static;
+    width:100%;
+    transform:none !important;
+    font-size:17px;
+    grid-template-columns:1fr;
+    grid-template-rows:none;
+    grid-template-areas:"gpu" "cpu" "ram" "store" "fps";
+  }
+  #stage.stack .s::after{max-width:min(300px,80vw)}
+  #stage.stack .ssds{flex-direction:column;gap:8px}
+  #stage.stack .hz{padding-top:0.4em}
+  #stage.stack .volt-graph{min-width:24px}
+
+  @media (prefers-reduced-motion:reduce){
+    .s::after,.s::before,.lang button{transition:none}
+  }
