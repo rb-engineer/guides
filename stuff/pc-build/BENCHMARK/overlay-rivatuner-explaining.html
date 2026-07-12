@@ -167,7 +167,7 @@
 
   /* ---------- Mini gráfico de historial (línea +12V) ---------- */
   .volt-graph{
-    flex:1;min-width:40px;height:16px;position:relative;
+    flex:0 0 auto;width:44px;height:16px;position:relative;
     display:flex;align-items:center;margin:0 6px;cursor:help;
   }
   .volt-graph::before{
@@ -456,10 +456,10 @@
     // (típico de RTSS); se guardan como texto para reproducirlo tal cual.
     rail3v: { current: '3.31', min: '3.296', max: '3.31' },
     perf: {
-      api: 'D3D12',
-      frametime: 5.6,
-      fps: 300,
-      refreshHz: 159,
+      api: 'OGL',
+      frametime: 999.6,
+      fps: 1,
+      refreshHz: 140,
       clock: '05:09:13 PM'
     }
   };
@@ -901,6 +901,7 @@
     return `<svg class="g-ico" viewBox="0 0 40 40" aria-hidden="true">
       <path d="${track}" fill="none" stroke="var(--gauge-track)" stroke-width="6" stroke-linecap="round"/>
       ${value ? `<path d="${value}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"/>` : ''}
+      <line x1="${cx}" y1="${cy}" x2="${needle.x.toFixed(2)}" y2="${needle.y.toFixed(2)}" stroke="#000" stroke-opacity="0.55" stroke-width="4.5" stroke-linecap="round"/>
       <line x1="${cx}" y1="${cy}" x2="${needle.x.toFixed(2)}" y2="${needle.y.toFixed(2)}" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
     </svg>`;
   };
