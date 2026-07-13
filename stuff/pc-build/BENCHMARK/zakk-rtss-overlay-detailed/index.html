@@ -163,9 +163,9 @@
     </div>
     <div class="row">
       <span class="s tl o" data-tip-key="rail5vLabel">+5V</span>
-      <span class="s c" data-bind="rail5v.current" data-fmt="2dec" data-unit="V" data-tip-key="rail5vCurrent">5.02<sup>V</sup></span>
+      <span class="s c" data-bind="rail5v.current" data-fmt="2dec" data-unit="V" data-tip-key="rail5vCurrent">5.020<sup>V</sup></span>
       <span class="volt-graph" tabindex="0" data-tip-key="rail5vGraph"><span class="tick"></span></span>
-      <span class="s p" data-bind="rail5v.min" data-fmt="2dec" data-unit="V" data-tip-key="rail5vMin">5.02<sup>V</sup></span>
+      <span class="s p" data-bind="rail5v.min" data-fmt="2dec" data-unit="V" data-tip-key="rail5vMin">5.020<sup>V</sup></span>
       <span class="s tr y" data-bind="rail5v.max" data-fmt="2dec" data-unit="V" data-tip-key="rail5vMax">5.06<sup>V</sup></span>
     </div>
     <div class="row">
@@ -184,15 +184,15 @@
 
   <!-- ===================== FPS / REFRESCO / RELOJ ===================== -->
   <section class="panel fps">
-    <div class="row">
-      <span class="s tl g" data-bind="perf.api" data-tip-key="apiLabel">OGL</span>
-      <span class="s w" data-bind="perf.frametime" data-fmt="1dec" data-unit="ms" data-tip-key="frametime">999.6<sup>ms</sup></span>
-    </div>
     <div class="row big">
-      <span class="s tl w" data-bind="perf.fps" data-fmt="int" data-suffix=" FPS" data-tip-key="fpsValue">1 FPS</span>
+      <span class="s tl w" data-bind="perf.fps" data-fmt="int" data-suffix=" FPS" data-tip-key="fpsValue">300 FPS</span>
     </div>
     <div class="row hz">
-      <span class="s tl w" data-bind="perf.refreshHz" data-fmt="int" data-unit="Hz" data-tip-key="refreshHz">140<sup>Hz</sup></span>
+      <span class="s tl c" data-bind="perf.refreshHz" data-fmt="int" data-unit="Hz" data-tip-key="refreshHz">159<sup>Hz</sup></span>
+    </div>
+    <div class="row">
+      <span class="s tl g" data-bind="perf.api" data-tip-key="apiLabel">D3D12</span>
+      <span class="s w" data-bind="perf.frametime" data-fmt="1dec" data-unit="ms" data-tip-key="frametime">5.6<sup>ms</sup></span>
     </div>
     <div class="clock"><span class="s tl c" data-bind="perf.clock" data-tip-key="clock">05:09:13 PM</span></div>
   </section>

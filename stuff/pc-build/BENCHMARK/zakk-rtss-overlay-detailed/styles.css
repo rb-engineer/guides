@@ -149,8 +149,8 @@
   #tip.above .caret{bottom:calc(-12px * var(--tip-k));border-top-color:var(--tip-border)}
   #tip.below .caret{top:calc(-12px * var(--tip-k));border-bottom-color:var(--tip-border)}
 
-  .fps .big{font-size:2.4em;letter-spacing:.03em;margin:2px 0}
-  .hz{font-size:1.05em;margin-top:auto;padding-top:1.6em}
+  .fps .big{font-size:2.4em;letter-spacing:.03em;margin:auto 0 2px;justify-content:center}
+  .hz{font-size:1.05em;justify-content:center}
   .clock{color:var(--cyan);font-size:1.35em;font-weight:700;margin-top:6px}
 
   /* ---------- Mini gráfico de historial (línea +12V) ---------- */

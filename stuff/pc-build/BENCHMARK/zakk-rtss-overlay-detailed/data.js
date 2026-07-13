@@ -35,7 +35,7 @@ export const DATA = {
     { label: 'SSD M.2: 990 PRO',  role: 'primary',   temp: 36, tempMax: 37, writePercent: 4, readPercent: 2 }
   ],
   rail12v: { current: 11.884, min: 11.788, max: 11.884 },
-  rail5v: { current: 5.02, min: 5.02, max: 5.06 },
+  rail5v: { current: 5.02, min: 5.020, max: 5.06 },
   // La fuente reporta estos con una cantidad de decimales inconsistente
   // (típico de RTSS); se guardan como texto para reproducirlo tal cual.
   rail3v: { current: '3.31', min: '3.296', max: '3.31' },
