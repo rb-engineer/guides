@@ -7,6 +7,7 @@
     --green:#08CD08;     /* nombres de discos SSD */
     --lime:#AEEA00;      /* API gráfica */
     --gauge-color:#00F0FF; /* color de todos los gauges (arco + aguja) */
+    --gpu-power-gauge:#468DFA; /* color del gauge de potencia de la GPU */
     --white:#f2f2f2;
     --label:#e8e8e8;
     --gauge-track:#123f4e;
@@ -103,7 +104,7 @@
   .lbl{color:var(--label);font-weight:600}
   .lbl-max{color:var(--yellow);font-weight:600}
   .disk{color:var(--green);font-size:1.05em;font-weight:700;letter-spacing:.04em}
-  .cores{font-size:0.85em}
+  .cores{display:grid;grid-template-columns:repeat(3,max-content);gap:2px 14px;font-size:0.85em}
   /* Ítems un poco más chicos (p. ej. la fila del chipset). */
   .sm{font-size:0.8em}
   .spacer{flex:1}

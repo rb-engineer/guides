@@ -37,7 +37,6 @@
     <h2><span class="s tl w" style="color:var(--orange)" data-bind="gpu.label" data-tip-key="gpuName">RTX 4080 SUPER</span></h2>
     <div class="row">
       <span class="s tl c" data-bind="gpu.temp" data-fmt="int" data-unit="°C" data-tip-key="gpuTemp">34<sup>°C</sup></span>
-      <span class="lbl-max">Max:</span>
       <span class="s y" data-bind="gpu.tempMax" data-fmt="int" data-unit="°C" data-tip-key="gpuTempMax">38<sup>°C</sup></span>
       <span class="s c" data-bind="gpu.hotspot" data-fmt="int" data-unit="°C" data-tip-key="gpuHotspot">42<sup>°C</sup></span>
       <span class="s c" data-bind="gpu.vramTemp" data-fmt="int" data-unit="°C" data-tip-key="gpuVramTemp">43<sup>°C</sup></span>
@@ -53,10 +52,9 @@
       <span class="s nb tl" data-tip-key="gpuPowerIcon">
         <svg class="bolt" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 L5 14 h6 l-2 8 8-12 h-6 z" fill="#fff"/></svg>
       </span>
+      <span class="s nb" data-gauge="gpu.powerUsagePercent" data-gauge-color="var(--gpu-power-gauge)" data-tip-key="gpuPowerUsage"></span>
       <span class="s c" data-bind="gpu.power" data-fmt="int" data-unit="W" data-tip-key="gpuPower">50<sup>W</sup></span>
       <span class="s y" data-bind="gpu.powerMax" data-fmt="int" data-unit="W" data-tip-key="gpuPowerMax">139<sup>W</sup></span>
-      <span class="lbl">Power Usage:</span>
-      <span class="s c" data-bind="gpu.powerUsagePercent" data-fmt="int" data-unit="%" data-tip-key="gpuPowerUsage">21<sup>%</sup></span>
     </div>
     <div class="row">
       <span class="lbl">Core Voltage:</span>
@@ -75,11 +73,9 @@
   <section class="panel cpu">
     <h2><span class="s tl w" style="color:var(--orange)" data-bind="cpu.label" data-tip-key="cpuName">R7 9700X</span>
       <span class="s nb" data-gauge="cpu.usagePercent" data-gauge-color="var(--gauge-color)" data-tip-key="cpuUsageGauge"></span>
-      <span class="s tr c" style="font-size:0.85em" data-bind="cpu.usagePercent" data-fmt="int" data-unit="%" data-tip-key="cpuUsagePercent">10<sup>%</sup></span>
     </h2>
     <div class="row">
       <span class="s tl c" data-bind="cpu.temp" data-fmt="int" data-unit="°C" data-tip-key="cpuTemp">56<sup>°C</sup></span>
-      <span class="lbl-max">Max:</span>
       <span class="s y" data-bind="cpu.tempMax" data-fmt="int" data-unit="°C" data-tip-key="cpuTempMax">67<sup>°C</sup></span>
     </div>
     <div class="row">
@@ -112,6 +108,11 @@
       <span class="s nb" data-gauge="derived.ramUsagePercent" data-gauge-color="var(--gauge-color)" data-tip-key="ramGauge"></span>
     </h2>
     <div class="row">
+      <span class="s tl c" data-bind="ram.used" data-fmt="2dec" data-unit="GB" data-tip-key="ramUsed">25.14<sup>GB</sup></span>
+      <span class="lbl">/</span>
+      <span class="s c" data-bind="ram.total" data-fmt="int" data-unit="GB" data-tip-key="ramTotal">64<sup>GB</sup></span>
+    </div>
+    <div class="row">
       <span class="s tl w" data-tip-key="ramSlot1">#1</span>
       <span class="s c" data-bind="ram.stick1.temp" data-fmt="int" data-unit="°C" data-tip-key="ram1Temp">43<sup>°C</sup></span>
       <span class="s y" data-bind="ram.stick1.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ram1Max">43<sup>°C</sup></span>
@@ -122,12 +123,7 @@
       <span class="s y" data-bind="ram.stick2.tempMax" data-fmt="int" data-unit="°C" data-tip-key="ram2Max">45<sup>°C</sup></span>
     </div>
     <div class="row">
-      <span class="s tl c" data-bind="ram.freq" data-fmt="int" data-unit="MHz" data-tip-key="ramFreq">5800<sup>MHz</sup></span>
-    </div>
-    <div class="row">
-      <span class="s tl c" data-bind="ram.used" data-fmt="2dec" data-unit="GB" data-tip-key="ramUsed">25.14<sup>GB</sup></span>
-      <span class="lbl">/</span>
-      <span class="s c" data-bind="ram.total" data-fmt="int" data-unit="GB" data-tip-key="ramTotal">64<sup>GB</sup></span>
+      <span class="s tl c" data-bind="ram.freq" data-fmt="int" data-unit="MT/s" data-tip-key="ramFreq">5800<sup>MT/s</sup></span>
     </div>
   </section>
 
