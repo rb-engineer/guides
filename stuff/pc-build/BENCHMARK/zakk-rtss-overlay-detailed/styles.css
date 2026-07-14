@@ -116,7 +116,7 @@
   /* ---------- Iconos de gauge (medidores) y bolt ---------- */
   .g-ico{width:1.15em;height:1.15em;display:inline-block;vertical-align:-0.2em;flex:none}
   .wr{display:inline-flex;flex-direction:column;align-items:center;line-height:1}
-  .wr small{font-size:0.5em;font-weight:600;color:#fff;margin-top:2px}
+  .wr small{font-size:0.5em;font-weight:600;color:var(--cyan);margin-top:2px}
   .bolt{width:1.1em;height:1.1em;display:inline-block;vertical-align:-0.2em;flex:none}
 
   /* ---------- Sensores con tooltip ---------- */
